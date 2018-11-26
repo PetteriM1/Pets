@@ -14,7 +14,6 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.HeartParticle;
-import cn.nukkit.math.AxisAlignedBB;
 import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector2;
 import cn.nukkit.math.Vector3;
@@ -55,40 +54,6 @@ public abstract class EntityPet extends EntityCreature {
         if (this.isSitting()) {
             this.namedTag.putByte("Sitting", 1);
         }
-    }
-
-    @Override
-    public boolean move(double dx, double dy, double dz) {
-        double movX = dx * 1.0d;
-        double movY = dy;
-        double movZ = dz * 1.0d;
-
-        AxisAlignedBB[] list = this.level.getCollisionCubes(this, this.level.getTickRate() > 1 ? this.boundingBox.getOffsetBoundingBox(dx, dy, dz) : this.boundingBox.addCoord(dx, dy, dz));
-
-        for (AxisAlignedBB bb : list) {
-            dx = bb.calculateXOffset(this.boundingBox, dx);
-        }
-
-        this.boundingBox.offset(dx, 0, 0);
-
-        for (AxisAlignedBB bb : list) {
-            dz = bb.calculateZOffset(this.boundingBox, dz);
-        }
-
-        this.boundingBox.offset(0, 0, dz);
-
-        for (AxisAlignedBB bb : list) {
-            dy = bb.calculateYOffset(this.boundingBox, dy);
-        }
-
-        this.boundingBox.offset(0, dy, 0);
-
-        this.setComponents(this.x + dx, this.y + dy, this.z + dz);
-        this.checkChunks();
-        this.checkGroundState(movX, movY, movZ, dx, dy, dz);
-        this.updateFallState(this.onGround);
-
-        return true;
     }
 
     @Override
