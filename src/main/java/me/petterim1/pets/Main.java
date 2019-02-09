@@ -1,8 +1,12 @@
 package me.petterim1.pets;
 
+import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.entity.Entity;
+import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.Listener;
+import cn.nukkit.event.player.PlayerTeleportEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
@@ -33,11 +37,11 @@ PPPPPPPPPP            eeeeeeeeeeeeee            ttttttttttt    sssssssssss     !
 *----------------------*
 
 */
-public class Main extends PluginBase {
+public class Main extends PluginBase implements Listener {
 
-    private int configVersion = 1;
+    private int configVersion = 2;
     private Config config;
-    public static Main instance;
+    private static Main instance;
 
     public static Main getInstance() {
         return instance;
@@ -51,13 +55,24 @@ public class Main extends PluginBase {
     @Override
     public void onEnable() {
         this.saveDefaultConfig();
-        this.config = getConfig();
+        this.config = this.getConfig();
 
-        if (config.getInt("configVersion") != configVersion) {
-            this.getServer().getLogger().warning("Config file is outdated");
+        if (config.getInt("configVersion") != this.configVersion) {
+            switch (config.getInt("configVersion")) {
+                case 1:
+                    config.set("teleportPets", true);
+                    config.set("configVersion", this.configVersion);
+                    config.save();
+                    this.config = this.getConfig();
+                    this.getServer().getLogger().info("Pets plugin config file updated.");
+                    break;
+                default:
+                    this.getServer().getLogger().warning("Pets plugin config file version is unknown. Unable to update.");
+            }
         }
 
         this.registerPets();
+        this.getServer().getPluginManager().registerEvents(this, this);
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
@@ -160,5 +175,21 @@ public class Main extends PluginBase {
 
     public String getNameTagColor() {
         return config.getString("nameTagColor").replace("§", "\u00A7");
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onTeleport(PlayerTeleportEvent e) {
+        if (!config.getBoolean("teleportPets")) return;
+        Player p = e.getPlayer();
+        for (Level level : this.getServer().getLevels().values()) {
+            for (Entity entity : level.getEntities()) {
+                if (entity instanceof EntityPet) {
+                    if (((EntityPet) entity).getOwner() == p) {
+                        entity.setLevel(e.getTo().getLevel());
+                        entity.teleport(e.getTo());
+                    }
+                }
+            }
+        }
     }
 }
