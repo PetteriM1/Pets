@@ -10,7 +10,11 @@ import cn.nukkit.event.player.PlayerTeleportEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
-import me.petterim1.pets.entities.*;
+import me.petterim1.pets.entities.PetCat;
+import me.petterim1.pets.entities.PetChicken;
+import me.petterim1.pets.entities.PetDog;
+
+import java.util.Map;
 
 /*
 
@@ -135,7 +139,7 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
-                    config.set("players." + args[1].toLowerCase(), "null");
+                    ((Map) config.get("players")).remove(args[1].toLowerCase());
                     config.save();
 
                     for (Level level : this.getServer().getLevels().values()) {
@@ -151,7 +155,7 @@ public class Main extends PluginBase implements Listener {
                     sender.sendMessage("\u00A7d>> \u00A7aPet removed");
                     return true;
                 case "list":
-                    sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat & Dog");
+                    sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken");
                     return true;
                 default:
                     sender.sendMessage("\u00A7d* \u00A7aPets \u00A7d*");
@@ -171,10 +175,11 @@ public class Main extends PluginBase implements Listener {
     private void registerPets() {
         Entity.registerEntity("Cat", PetCat.class);
         Entity.registerEntity("Dog", PetDog.class);
+        Entity.registerEntity("Chicken", PetChicken.class);
     }
 
     public String getNameTagColor() {
-        return config.getString("nameTagColor").replace("§", "\u00A7");
+        return config.getString("nameTagColor");
     }
 
     @EventHandler(ignoreCancelled = true)

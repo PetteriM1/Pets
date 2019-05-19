@@ -8,7 +8,7 @@ import cn.nukkit.nbt.tag.DoubleTag;
 import cn.nukkit.nbt.tag.FloatTag;
 import cn.nukkit.nbt.tag.ListTag;
 
-import java.util.*;
+import java.util.Random;
 
 public class Utils {
 

@@ -1,6 +1,6 @@
 name: Pets
 version: "${pom.version}"
-api: ["1.0.0"]
+api: ["1.0.7"]
 author: PetteriM1
 main: me.petterim1.pets.Main
 description: Pets plugin for Nukkit

@@ -1,12 +1,7 @@
 package me.petterim1.pets;
 
 import cn.nukkit.Player;
-import cn.nukkit.block.Block;
-import cn.nukkit.block.BlockFence;
-import cn.nukkit.block.BlockFenceGate;
-import cn.nukkit.block.BlockLiquid;
-import cn.nukkit.block.BlockSlab;
-import cn.nukkit.block.BlockStairs;
+import cn.nukkit.block.*;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityCreature;
 import cn.nukkit.entity.passive.EntityAnimal;
@@ -39,7 +34,8 @@ public abstract class EntityPet extends EntityCreature {
         }
     }
 
-    public void setRandomType() {}
+    public void setRandomType() {
+    }
 
     @Override
     public String getName() {
@@ -67,7 +63,7 @@ public abstract class EntityPet extends EntityCreature {
             this.setSitting();
         }
 
-        return true;
+        return false;
     }
 
     public Player getOwner() {
@@ -192,7 +188,7 @@ public abstract class EntityPet extends EntityCreature {
                 this.motionY = this.getGravity();
             } else if (this.motionY <= this.getGravity() * 4) {
                 this.motionY = this.getGravity() * 4;
-            } else if (block instanceof BlockSlab && block instanceof BlockStairs) {
+            } else if (block instanceof BlockSlab || block instanceof BlockStairs) {
                 this.motionY = this.getGravity() * 4;
             } else if (this.motionY <= (this.getGravity() * 8)) {
                 this.motionY = this.getGravity() * 8;
@@ -211,7 +207,6 @@ public abstract class EntityPet extends EntityCreature {
 
         if (this.followTarget != null && !this.followTarget.closed && this.followTarget.isAlive()) {
             double x = this.followTarget.x - this.x;
-            double y = this.followTarget.y - this.y;
             double z = this.followTarget.z - this.z;
 
             double diff = Math.abs(x) + Math.abs(z);
@@ -228,7 +223,6 @@ public abstract class EntityPet extends EntityCreature {
                 }
             }
             this.yaw = Math.toDegrees(-Math.atan2(x / diff, z / diff));
-            this.pitch = y == 0 ? 0 : Math.toDegrees(-Math.atan2(y, Math.sqrt(x * x + z * z)));
             return this.followTarget;
         }
 
@@ -236,7 +230,6 @@ public abstract class EntityPet extends EntityCreature {
         this.checkTarget();
         if (this.target instanceof EntityCreature || before != this.target) {
             double x = this.target.x - this.x;
-            double y = this.target.y - this.y;
             double z = this.target.z - this.z;
 
             double diff = Math.abs(x) + Math.abs(z);
@@ -253,7 +246,6 @@ public abstract class EntityPet extends EntityCreature {
                 }
             }
             this.yaw = Math.toDegrees(-Math.atan2(x / diff, z / diff));
-            this.pitch = y == 0 ? 0 : Math.toDegrees(-Math.atan2(y, Math.sqrt(x * x + z * z)));
         }
 
         double dx = this.motionX * tickDiff;
@@ -309,7 +301,6 @@ public abstract class EntityPet extends EntityCreature {
 
         if (target instanceof Player) {
             if (this.distanceSquared(target) <= 20) {
-                this.pitch = 22;
                 this.x = this.lastX;
                 this.y = this.lastY;
                 this.z = this.lastZ;
@@ -335,5 +326,9 @@ public abstract class EntityPet extends EntityCreature {
         }
 
         return true;
+    }
+
+    protected float getMountedYOffset() {
+        return getHeight() * 0.75F;
     }
 }

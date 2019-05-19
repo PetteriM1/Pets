@@ -32,18 +32,20 @@ public class PetDog extends EntityPet {
 
     @Override
     public boolean onInteract(Player player, Item item) {
-        if (player.getInventory().getItemInHand().equals(Item.get(Item.BONE, 0))) {
-            player.getInventory().removeItem(Item.get(Item.BONE, 0, 1));
-            this.level.addParticle(new ItemBreakParticle(
-                    this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
-                    Item.get(Item.BONE)));
+        switch (player.getInventory().getItemInHand().getId()) {
+            case Item.BONE:
+            case Item.ROTTEN_FLESH:
+                player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
+                this.level.addParticle(new ItemBreakParticle(
+                        this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
+                        player.getInventory().getItemInHand()));
 
-            this.inLoveTicks = 10;
-            this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
-            player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
-            return true;
-        } else {
-            return super.onInteract(player, item);
+                this.inLoveTicks = 10;
+                this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
+                player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
+                return true;
+            default:
+                return super.onInteract(player, item);
         }
     }
 }
