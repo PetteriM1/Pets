@@ -106,12 +106,12 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
-                    Entity ent = Utils.create(args[2], this.getServer().getPlayer(args[1]));
+                    Entity ent = Entity.createEntity("Pet" + args[2], this.getServer().getPlayer(args[1]));
 
                     if (ent != null) {
                         if (!(ent instanceof EntityPet)) {
                             ent.close();
-                            sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat & Dog");
+                            sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken");
                             return true;
                         }
 
@@ -173,9 +173,9 @@ public class Main extends PluginBase implements Listener {
     }
 
     private void registerPets() {
-        Entity.registerEntity("Cat", PetCat.class);
-        Entity.registerEntity("Dog", PetDog.class);
-        Entity.registerEntity("Chicken", PetChicken.class);
+        Entity.registerEntity("PetCat", PetCat.class);
+        Entity.registerEntity("PetDog", PetDog.class);
+        Entity.registerEntity("PetChicken", PetChicken.class);
     }
 
     public String getNameTagColor() {
