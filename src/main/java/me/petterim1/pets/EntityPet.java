@@ -22,6 +22,7 @@ public abstract class EntityPet extends EntityCreature {
     protected int stayTime = 0;
     protected int moveTime = 0;
     protected int inLoveTicks = 0;
+    protected boolean findingPlayer = false;
 
     public EntityPet(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
@@ -79,10 +80,20 @@ public abstract class EntityPet extends EntityCreature {
     public boolean targetOption(EntityCreature creature, double distance) {
         if (creature instanceof Player) {
             Player player = (Player) creature;
-            return player.isAlive() && !player.closed && player == this.getOwner() && distance < 300 && distance > 12;
+            return player.isAlive() && !player.closed && player == this.getOwner() && distanceCheck(distance);
         }
 
         return false;
+    }
+
+    private boolean distanceCheck(double distance) {
+        boolean dis = distance < 300 && distance > 12;
+
+        if (dis && findingPlayer) {
+            findingPlayer = false;
+        }
+
+        return dis || findingPlayer;
     }
 
     public void setSitting() {
@@ -210,7 +221,7 @@ public abstract class EntityPet extends EntityCreature {
             double z = this.followTarget.z - this.z;
 
             double diff = Math.abs(x) + Math.abs(z);
-            if (this.stayTime > 0 || this.distance(this.followTarget) <= (this.getWidth() + 0.0d) / 2 + 0.05) {
+            if (this.stayTime > 0 || (!findingPlayer && this.distance(this.followTarget) <= (this.getWidth() + 0.0d) / 2 + 0.05)) {
                 this.motionX = 0;
                 this.motionZ = 0;
             } else {
@@ -233,7 +244,7 @@ public abstract class EntityPet extends EntityCreature {
             double z = this.target.z - this.z;
 
             double diff = Math.abs(x) + Math.abs(z);
-            if (this.stayTime > 0 || this.distance(this.target) <= (this.getWidth() + 0.0d) / 2 + 0.05) {
+            if (this.stayTime > 0 || (!findingPlayer && this.distance(this.target) <= (this.getWidth() + 0.0d) / 2 + 0.05)) {
                 this.motionX = 0;
                 this.motionZ = 0;
             } else {

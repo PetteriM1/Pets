@@ -11,8 +11,15 @@ commands:
     description: Pets command
     usage: "/pet"
     permission: pets.manage
+  callpet:
+    description: Call your pet
+    usage: "/callpet"
+    permission: pets.call
 
 permissions:
   pets.manage:
     description: "Allows user to manage pets"
     default: op
+  pets.call:
+    description: "Allows user to call a pet"
+    default: true

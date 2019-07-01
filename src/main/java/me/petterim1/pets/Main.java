@@ -43,7 +43,7 @@ PPPPPPPPPP            eeeeeeeeeeeeee            ttttttttttt    sssssssssss     !
 */
 public class Main extends PluginBase implements Listener {
 
-    private int configVersion = 2;
+    private static final int configVersion = 3;
     private Config config;
     private static Main instance;
 
@@ -61,15 +61,22 @@ public class Main extends PluginBase implements Listener {
         this.saveDefaultConfig();
         this.config = this.getConfig();
 
-        if (config.getInt("configVersion") != this.configVersion) {
+        if (config.getInt("configVersion") != configVersion) {
             switch (config.getInt("configVersion")) {
                 case 1:
                     config.set("teleportPets", true);
-                    config.set("configVersion", this.configVersion);
+                    config.set("configVersion", configVersion);
                     config.save();
                     this.config = this.getConfig();
                     this.getServer().getLogger().info("Pets plugin config file updated.");
                     break;
+                case 2:
+                    config.set("enablePetCall", true);
+                    config.set("callPetSwitchWorld", true);
+                    config.set("configVersion", configVersion);
+                    config.save();
+                    this.config = this.getConfig();
+                    this.getServer().getLogger().info("Pets plugin config file updated.");
                 default:
                     this.getServer().getLogger().warning("Pets plugin config file version is unknown. Unable to update.");
             }
@@ -101,7 +108,7 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
-                    if (config.getString("players." + args[1].toLowerCase()).contains("Cat") || config.getString("players." + args[1].toLowerCase()).contains("Dog")) {
+                    if (config.getString("players." + args[1].toLowerCase()).contains("Cat") || config.getString("players." + args[1].toLowerCase()).contains("Dog") || config.getString("players." + args[1].toLowerCase()).contains("Chicken")) {
                         sender.sendMessage("\u00A7d>> \u00A7cThis player already have a pet");
                         return true;
                     }
@@ -147,12 +154,14 @@ public class Main extends PluginBase implements Listener {
                             if (entity instanceof EntityPet) {
                                 if (((EntityPet) entity).getOwner() == this.getServer().getPlayer(args[1])) {
                                     entity.close();
+                                    sender.sendMessage("\u00A7d>> \u00A7aPet removed");
+                                    return true;
                                 }
                             }
                         }
                     }
 
-                    sender.sendMessage("\u00A7d>> \u00A7aPet removed");
+                    sender.sendMessage("\u00A7d>> \u00A7cPet not found");
                     return true;
                 case "list":
                     sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken");
@@ -163,6 +172,46 @@ public class Main extends PluginBase implements Listener {
                     sender.sendMessage("\u00A76/pet remove <player>");
                     sender.sendMessage("\u00A76/pet list");
             }
+        } else if (cmd.getName().equalsIgnoreCase("callpet")) {
+            if (!(sender instanceof Player)) {
+                sender.sendMessage("\u00A7d>> \u00A7cThis command only works in game");
+                return true;
+            }
+
+            if (!config.getString("players." + sender.getName().toLowerCase()).contains("Cat") && !config.getString("players." + sender.getName().toLowerCase()).contains("Dog") && !config.getString("players." + sender.getName().toLowerCase()).contains("Chicken")) {
+                sender.sendMessage("\u00A7d>> \u00A7cYou don't have a pet");
+                return true;
+            }
+
+            for (Level level : this.getServer().getLevels().values()) {
+                for (Entity entity : level.getEntities()) {
+                    if (entity instanceof EntityPet) {
+                        if (((EntityPet) entity).getOwner() == sender) {
+                            if (/*((Player) sender).distance(entity) > 50 ||*/ !((Player) sender).getLevel().equals(entity.getLevel())) {
+                                if (!config.getBoolean("callPetSwitchWorld")) {
+                                    sender.sendMessage("\u00A7d>> \u00A7cYou cannot teleport your pet to this world");
+                                    return true;
+                                }
+
+                                entity.setLevel(((Player) sender).getLevel());
+                                entity.teleport((Player) sender);
+                            } else {
+                                entity.teleport((Player) sender);
+                                /*((EntityPet) entity).target = (Player) sender;
+                                ((EntityPet) entity).followTarget = (Player) sender;
+                                ((EntityPet) entity).stayTime = 0;
+                                ((EntityPet) entity).findingPlayer = true;*/
+                            }
+
+                            sender.sendMessage("\u00A7d>> \u00A7aPet called");
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            sender.sendMessage("\u00A7d>> \u00A7cPet not found");
+            return false;
         }
 
         return true;
@@ -178,7 +227,7 @@ public class Main extends PluginBase implements Listener {
         Entity.registerEntity("PetChicken", PetChicken.class);
     }
 
-    public String getNameTagColor() {
+    String getNameTagColor() {
         return config.getString("nameTagColor");
     }
 
