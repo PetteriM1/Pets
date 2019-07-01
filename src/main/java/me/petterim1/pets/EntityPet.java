@@ -226,11 +226,11 @@ public abstract class EntityPet extends EntityCreature {
                 this.motionZ = 0;
             } else {
                 if (this.isInsideOfWater()) {
-                    this.motionX = 1.1 * 0.05 * (x / diff);
-                    this.motionZ = 1.1 * 0.05 * (z / diff);
+                    this.motionX = 0.06 * (x / diff);
+                    this.motionZ = 0.06 * (z / diff);
                 } else {
-                    this.motionX = 1.1 * 0.1 * (x / diff);
-                    this.motionZ = 1.1 * 0.1 * (z / diff);
+                    this.motionX = 0.12 * (x / diff);
+                    this.motionZ = 0.12 * (z / diff);
                 }
             }
             this.yaw = Math.toDegrees(-Math.atan2(x / diff, z / diff));
@@ -249,11 +249,11 @@ public abstract class EntityPet extends EntityCreature {
                 this.motionZ = 0;
             } else {
                 if (this.isInsideOfWater()) {
-                    this.motionX = 1.1 * 0.05 * (x / diff);
-                    this.motionZ = 1.1 * 0.05 * (z / diff);
+                    this.motionX = 0.06 * (x / diff);
+                    this.motionZ = 0.06 * (z / diff);
                 } else {
-                    this.motionX = 1.1 * 0.15 * (x / diff);
-                    this.motionZ = 1.1 * 0.15 * (z / diff);
+                    this.motionX = 0.18 * (x / diff);
+                    this.motionZ = 0.18 * (z / diff);
                 }
             }
             this.yaw = Math.toDegrees(-Math.atan2(x / diff, z / diff));
