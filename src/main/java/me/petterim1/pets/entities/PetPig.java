@@ -1,7 +1,7 @@
 package me.petterim1.pets.entities;
 
 import cn.nukkit.Player;
-import cn.nukkit.entity.passive.EntityChicken;
+import cn.nukkit.entity.passive.EntityPig;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.ItemBreakParticle;
@@ -10,34 +10,33 @@ import me.petterim1.pets.EntityPet;
 import me.petterim1.pets.Main;
 import me.petterim1.pets.Utils;
 
-public class PetChicken extends EntityPet {
+public class PetPig extends EntityPet {
 
-    public PetChicken(FullChunk chunk, CompoundTag nbt) {
+    public PetPig(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
     @Override
     public int getNetworkId() {
-        return EntityChicken.NETWORK_ID;
+        return EntityPig.NETWORK_ID;
     }
 
     @Override
     public float getWidth() {
-        return 0.4f;
+        return 0.9f;
     }
 
     @Override
     public float getHeight() {
-        return 0.7f;
+        return 0.9f;
     }
 
     @Override
     public boolean onInteract(Player player, Item item) {
         switch (player.getInventory().getItemInHand().getId()) {
-            case Item.SEEDS:
-            case Item.PUMPKIN_SEEDS:
-            case Item.MELON_SEEDS:
-            case Item.BEETROOT_SEEDS:
+            case Item.CARROT:
+            case Item.POTATO:
+            case Item.BEETROOT:
                 player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
                 this.level.addParticle(new ItemBreakParticle(
                         this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),

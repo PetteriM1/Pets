@@ -8,7 +8,9 @@ import cn.nukkit.entity.passive.EntityAnimal;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.particle.CriticalParticle;
 import cn.nukkit.level.particle.HeartParticle;
+import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector2;
 import cn.nukkit.math.Vector3;
@@ -16,13 +18,13 @@ import cn.nukkit.nbt.tag.CompoundTag;
 
 public abstract class EntityPet extends EntityCreature {
 
-    protected String owner = null;
-    protected Vector3 target = null;
-    protected Entity followTarget = null;
-    protected int stayTime = 0;
-    protected int moveTime = 0;
-    protected int inLoveTicks = 0;
-    protected boolean findingPlayer = false;
+    protected String owner;
+    protected Vector3 target;
+    protected Entity followTarget;
+    protected int stayTime;
+    protected int moveTime;
+    protected int inLoveTicks;
+    protected boolean findingPlayer;
 
     public EntityPet(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
@@ -33,6 +35,8 @@ public abstract class EntityPet extends EntityCreature {
         if (nbt.getByte("Sitting") == 1) {
             this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, true);
         }
+
+        this.pitch = 0;
     }
 
     public void setRandomType() {
@@ -55,6 +59,7 @@ public abstract class EntityPet extends EntityCreature {
 
     @Override
     public boolean attack(EntityDamageEvent ev) {
+        this.level.addParticle(new CriticalParticle(this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5))));
         return true;
     }
 
@@ -173,13 +178,13 @@ public abstract class EntityPet extends EntityCreature {
     }
 
     protected boolean checkJump(double dx, double dz) {
-        if (this.motionY == this.getGravity() * 2) {
+        if (this.motionY == 0.16) {
             return this.level.getBlock(new Vector3(NukkitMath.floorDouble(this.x), (int) this.y,
                     NukkitMath.floorDouble(this.z))) instanceof BlockLiquid;
         } else {
             if (this.level.getBlock(new Vector3(NukkitMath.floorDouble(this.x), (int) (this.y + 0.8),
                     NukkitMath.floorDouble(this.z))) instanceof BlockLiquid) {
-                this.motionY = this.getGravity() * 2;
+                this.motionY = 0.16;
                 return true;
             }
         }
@@ -196,15 +201,15 @@ public abstract class EntityPet extends EntityCreature {
         Block block = that.getSide(this.getHorizontalFacing());
         if (!block.canPassThrough() && block.up().canPassThrough() && that.up(2).canPassThrough()) {
             if (block instanceof BlockFence || block instanceof BlockFenceGate) {
-                this.motionY = this.getGravity();
-            } else if (this.motionY <= this.getGravity() * 4) {
-                this.motionY = this.getGravity() * 4;
+                this.motionY = 0.08;
+            } else if (this.motionY <= 0.32) {
+                this.motionY = 0.32;
             } else if (block instanceof BlockSlab || block instanceof BlockStairs) {
-                this.motionY = this.getGravity() * 4;
-            } else if (this.motionY <= (this.getGravity() * 8)) {
-                this.motionY = this.getGravity() * 8;
+                this.motionY = 0.32;
+            } else if (this.motionY <= (0.64)) {
+                this.motionY = 0.64;
             } else {
-                this.motionY += this.getGravity() * 0.25;
+                this.motionY += 0.02;
             }
             return true;
         }
@@ -278,13 +283,13 @@ public abstract class EntityPet extends EntityCreature {
         if (!isJump) {
             if (this.onGround) {
                 this.motionY = 0;
-            } else if (this.motionY > -this.getGravity() * 4) {
+            } else if (this.motionY > -0.32) {
                 if (!(this.level.getBlock(new Vector3(NukkitMath.floorDouble(this.x), (int) (this.y + 0.8),
                         NukkitMath.floorDouble(this.z))) instanceof BlockLiquid)) {
-                    this.motionY -= this.getGravity() * 1;
+                    this.motionY -= 0.08;
                 }
             } else {
-                this.motionY -= this.getGravity() * tickDiff;
+                this.motionY -= 0.08 * tickDiff;
             }
         }
 
@@ -337,6 +342,15 @@ public abstract class EntityPet extends EntityCreature {
         }
 
         return true;
+    }
+
+    @Override
+    public boolean move(double x, double y, double z) {
+        if (y < -5 || y > 5) {
+            return false;
+        }
+
+        return super.move(x, y, z);
     }
 
     protected float getMountedYOffset() {

@@ -13,6 +13,7 @@ import cn.nukkit.utils.Config;
 import me.petterim1.pets.entities.PetCat;
 import me.petterim1.pets.entities.PetChicken;
 import me.petterim1.pets.entities.PetDog;
+import me.petterim1.pets.entities.PetPig;
 
 import java.util.Map;
 
@@ -77,6 +78,7 @@ public class Main extends PluginBase implements Listener {
                     config.save();
                     this.config = this.getConfig();
                     this.getServer().getLogger().info("Pets plugin config file updated.");
+                    break;
                 default:
                     this.getServer().getLogger().warning("Pets plugin config file version is unknown. Unable to update.");
             }
@@ -118,7 +120,7 @@ public class Main extends PluginBase implements Listener {
                     if (ent != null) {
                         if (!(ent instanceof EntityPet)) {
                             ent.close();
-                            sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken");
+                            sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken, Pig");
                             return true;
                         }
 
@@ -225,6 +227,7 @@ public class Main extends PluginBase implements Listener {
         Entity.registerEntity("PetCat", PetCat.class);
         Entity.registerEntity("PetDog", PetDog.class);
         Entity.registerEntity("PetChicken", PetChicken.class);
+        Entity.registerEntity("PetPig", PetPig.class);
     }
 
     String getNameTagColor() {

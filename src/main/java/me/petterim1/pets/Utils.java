@@ -1,10 +1,10 @@
 package me.petterim1.pets;
 
-import java.util.Random;
+import java.util.SplittableRandom;
 
 public class Utils {
 
-    private static final Random random = new Random(System.currentTimeMillis());
+    private static final SplittableRandom random = new SplittableRandom(System.currentTimeMillis());
 
     public static int rand(int min, int max) {
         if (min == max) {
