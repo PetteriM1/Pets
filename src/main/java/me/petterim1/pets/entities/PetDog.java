@@ -35,6 +35,11 @@ public class PetDog extends EntityPet {
         switch (player.getInventory().getItemInHand().getId()) {
             case Item.BONE:
             case Item.ROTTEN_FLESH:
+            case Item.RAW_BEEF:
+            case Item.RAW_MUTTON:
+            case Item.RAW_RABBIT:
+            case Item.RAW_CHICKEN:
+            case Item.RAW_PORKCHOP:
                 player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
                 this.level.addParticle(new ItemBreakParticle(
                         this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),

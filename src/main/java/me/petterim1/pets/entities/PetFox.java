@@ -1,8 +1,6 @@
 package me.petterim1.pets.entities;
 
 import cn.nukkit.Player;
-import cn.nukkit.entity.data.IntEntityData;
-import cn.nukkit.entity.passive.EntityOcelot;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.ItemBreakParticle;
@@ -11,43 +9,38 @@ import me.petterim1.pets.EntityPet;
 import me.petterim1.pets.Main;
 import me.petterim1.pets.Utils;
 
-public class PetCat extends EntityPet {
+public class PetFox extends EntityPet {
 
-    protected int type;
-
-    public PetCat(FullChunk chunk, CompoundTag nbt) {
+    public PetFox(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
     @Override
-    protected void initEntity() {
-        super.initEntity();
-
-        this.type = this.namedTag.getInt("CatType");
-        this.setDataProperty(new IntEntityData(DATA_VARIANT, this.type));
-    }
-
-    @Override
     public int getNetworkId() {
-        return EntityOcelot.NETWORK_ID;
+        return 121;
     }
 
     @Override
     public float getWidth() {
-        return 0.6f;
+        return 0.7f;
     }
 
     @Override
     public float getHeight() {
-        return 0.7f;
+        return 0.6f;
     }
 
     @Override
     public boolean onInteract(Player player, Item item) {
         switch (player.getInventory().getItemInHand().getId()) {
-            case Item.RAW_FISH:
-            case Item.RAW_SALMON:
-            case Item.CLOWNFISH:
+            case Item.BONE:
+            case Item.ROTTEN_FLESH:
+            case Item.RAW_BEEF:
+            case Item.RAW_MUTTON:
+            case Item.RAW_RABBIT:
+            case Item.RAW_CHICKEN:
+            case Item.RAW_PORKCHOP:
+            case Item.SWEET_BERRIES:
                 player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
                 this.level.addParticle(new ItemBreakParticle(
                         this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
@@ -60,19 +53,5 @@ public class PetCat extends EntityPet {
             default:
                 return super.onInteract(player, item);
         }
-    }
-
-    @Override
-    public void setRandomType() {
-        this.type = Utils.rand(1, 3);
-        this.saveNBT();
-    }
-
-    @Override
-    public void saveNBT() {
-        super.saveNBT();
-
-        this.namedTag.putInt("CatType", this.type);
-        this.setDataProperty(new IntEntityData(DATA_VARIANT, this.type));
     }
 }

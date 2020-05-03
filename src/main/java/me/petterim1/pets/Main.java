@@ -10,10 +10,7 @@ import cn.nukkit.event.player.PlayerTeleportEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.Config;
-import me.petterim1.pets.entities.PetCat;
-import me.petterim1.pets.entities.PetChicken;
-import me.petterim1.pets.entities.PetDog;
-import me.petterim1.pets.entities.PetPig;
+import me.petterim1.pets.entities.*;
 
 import java.util.Map;
 
@@ -95,6 +92,7 @@ public class Main extends PluginBase implements Listener {
                 sender.sendMessage("\u00A76/pet add <player> <pet>");
                 sender.sendMessage("\u00A76/pet remove <player>");
                 sender.sendMessage("\u00A76/pet list");
+                sender.sendMessage("\u00A76/callpet");
                 return true;
             }
 
@@ -105,30 +103,32 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
-                    if (this.getServer().getPlayerExact(args[1]) == null) {
+                    Player pl = this.getServer().getPlayerExact(args[1]);
+                    if (pl == null) {
                         sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
                         return true;
                     }
 
-                    if (config.getString("players." + args[1].toLowerCase()).contains("Cat") || config.getString("players." + args[1].toLowerCase()).contains("Dog") || config.getString("players." + args[1].toLowerCase()).contains("Chicken")) {
+                    String a1 = args[1].toLowerCase();
+                    if (config.getString("players." + a1).contains("Cat") || config.getString("players." + a1).contains("Dog") || config.getString("players." + a1).contains("Chicken") || config.getString("players." + a1).contains("Pig") || config.getString("players." + a1).contains("Fox")) {
                         sender.sendMessage("\u00A7d>> \u00A7cThis player already have a pet");
                         return true;
                     }
 
-                    Entity ent = Entity.createEntity("Pet" + args[2], this.getServer().getPlayer(args[1]));
+                    Entity ent = Entity.createEntity("Pet" + args[2], pl);
 
                     if (ent != null) {
                         if (!(ent instanceof EntityPet)) {
                             ent.close();
-                            sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken, Pig");
+                            sendPetsList(sender);
                             return true;
                         }
 
-                        ((EntityPet) ent).setOwner(this.getServer().getPlayer(args[1]).getName());
+                        ((EntityPet) ent).setOwner(pl.getName());
                         ((EntityPet) ent).setRandomType();
                         ent.spawnToAll();
 
-                        config.set("players." + args[1].toLowerCase(), args[2]);
+                        config.set("players." + a1, args[2]);
                         config.save();
 
                         sender.sendMessage("\u00A7d>> \u00A7aPet added");
@@ -143,18 +143,25 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
-                    if (this.getServer().getPlayerExact(args[1]) == null) {
+                    Player pla = this.getServer().getPlayerExact(args[1]);
+                    if (pla == null) {
                         sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
                         return true;
                     }
 
-                    ((Map) config.get("players")).remove(args[1].toLowerCase());
+                    String se = args[1].toLowerCase();
+                    if (!config.getString("players." + se).contains("Cat") && !config.getString("players." + se).contains("Dog") && !config.getString("players." + se).contains("Chicken") && !config.getString("players." + se).contains("Pig") && !config.getString("players." + se).contains("Fox")) {
+                        sender.sendMessage("\u00A7d>> \u00A7cThis player does not have a pet");
+                        return true;
+                    }
+
+                    ((Map) config.get("players")).remove(se);
                     config.save();
 
                     for (Level level : this.getServer().getLevels().values()) {
                         for (Entity entity : level.getEntities()) {
                             if (entity instanceof EntityPet) {
-                                if (((EntityPet) entity).getOwner() == this.getServer().getPlayer(args[1])) {
+                                if (((EntityPet) entity).getOwner() == pla) {
                                     entity.close();
                                     sender.sendMessage("\u00A7d>> \u00A7aPet removed");
                                     return true;
@@ -166,13 +173,14 @@ public class Main extends PluginBase implements Listener {
                     sender.sendMessage("\u00A7d>> \u00A7cPet not found");
                     return true;
                 case "list":
-                    sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken");
+                    sendPetsList(sender);
                     return true;
                 default:
                     sender.sendMessage("\u00A7d* \u00A7aPets \u00A7d*");
                     sender.sendMessage("\u00A76/pet add <player> <pet>");
                     sender.sendMessage("\u00A76/pet remove <player>");
                     sender.sendMessage("\u00A76/pet list");
+                    sender.sendMessage("\u00A76/callpet");
             }
         } else if (cmd.getName().equalsIgnoreCase("callpet")) {
             if (!(sender instanceof Player)) {
@@ -180,7 +188,8 @@ public class Main extends PluginBase implements Listener {
                 return true;
             }
 
-            if (!config.getString("players." + sender.getName().toLowerCase()).contains("Cat") && !config.getString("players." + sender.getName().toLowerCase()).contains("Dog") && !config.getString("players." + sender.getName().toLowerCase()).contains("Chicken")) {
+            String se = sender.getName().toLowerCase();
+            if (!config.getString("players." + se).contains("Cat") && !config.getString("players." + se).contains("Dog") && !config.getString("players." + se).contains("Chicken") && !config.getString("players." + se).contains("Pig") && !config.getString("players." + se).contains("Fox")) {
                 sender.sendMessage("\u00A7d>> \u00A7cYou don't have a pet");
                 return true;
             }
@@ -219,6 +228,10 @@ public class Main extends PluginBase implements Listener {
         return true;
     }
 
+    private static void sendPetsList(CommandSender sender) {
+        sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken, Pig, Fox");
+    }
+
     public Config getPluginConfig() {
         return this.config;
     }
@@ -228,6 +241,7 @@ public class Main extends PluginBase implements Listener {
         Entity.registerEntity("PetDog", PetDog.class);
         Entity.registerEntity("PetChicken", PetChicken.class);
         Entity.registerEntity("PetPig", PetPig.class);
+        Entity.registerEntity("PetFox", PetFox.class);
     }
 
     String getNameTagColor() {
