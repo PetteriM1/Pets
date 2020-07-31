@@ -189,7 +189,7 @@ public class Main extends PluginBase implements Listener {
             }
 
             String se = sender.getName().toLowerCase();
-            if (!config.getString("players." + se).contains("Cat") && !config.getString("players." + se).contains("Dog") && !config.getString("players." + se).contains("Chicken") && !config.getString("players." + se).contains("Pig") && !config.getString("players." + se).contains("Fox")) {
+            if (!config.getString("players." + se).contains("Cat") && !config.getString("players." + se).contains("Chicken") && !config.getString("players." + se).contains("Cow") && !config.getString("players." + se).contains("Dog") && !config.getString("players." + se).contains("Fox") && !config.getString("players." + se).contains("Pig") && !config.getString("players." + se).contains("PolarBear") && !config.getString("players." + se).contains("Sheep")) {
                 sender.sendMessage("\u00A7d>> \u00A7cYou don't have a pet");
                 return true;
             }
@@ -229,7 +229,7 @@ public class Main extends PluginBase implements Listener {
     }
 
     private static void sendPetsList(CommandSender sender) {
-        sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Dog, Chicken, Pig, Fox");
+        sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Chicken, Cow, Dog, Fox, Pig, PolarBear, Sheep");
     }
 
     public Config getPluginConfig() {
@@ -238,10 +238,13 @@ public class Main extends PluginBase implements Listener {
 
     private void registerPets() {
         Entity.registerEntity("PetCat", PetCat.class);
-        Entity.registerEntity("PetDog", PetDog.class);
         Entity.registerEntity("PetChicken", PetChicken.class);
-        Entity.registerEntity("PetPig", PetPig.class);
+        Entity.registerEntity("PetCow", PetCow.class);
+        Entity.registerEntity("PetDog", PetDog.class);
         Entity.registerEntity("PetFox", PetFox.class);
+        Entity.registerEntity("PetPig", PetPig.class);
+        Entity.registerEntity("PetPolarBear", PetPolarBear.class);
+        Entity.registerEntity("PetSheep", PetSheep.class);
     }
 
     String getNameTagColor() {
