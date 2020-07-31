@@ -57,6 +57,10 @@ public class PetSheep extends EntityPet {
                 this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
                 player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
                 return true;
+            case Item.DYE:
+                this.color = ((ItemDye) item).getDyeColor().getWoolData();
+                this.saveNBT();
+                return true;
             default:
                 return false;
         }
