@@ -12,7 +12,7 @@ import me.petterim1.pets.Utils;
 
 public class PetCow extends EntityPet {
 
-    public PetSheep(FullChunk chunk, CompoundTag nbt) {
+    public PetCow(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
     }
 
