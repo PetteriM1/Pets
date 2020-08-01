@@ -2,6 +2,7 @@ package me.petterim1.pets.entities;
 
 import cn.nukkit.Player;
 import cn.nukkit.entity.passive.EntityPolarBear;
+import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
