@@ -4,9 +4,11 @@ import cn.nukkit.Player;
 import cn.nukkit.entity.passive.EntityPolarBear;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
+import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
 import me.petterim1.pets.Main;
+import me.petterim1.pets.Utils;
 
 public class PetPolarBear extends EntityPet {
 
