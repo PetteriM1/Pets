@@ -33,19 +33,17 @@ public class PetCow extends EntityPet {
 
     @Override
     public boolean onInteract(Player player, Item item) {
-        switch (player.getInventory().getItemInHand().getId()) {
-            case Item.WHEAT:
-                player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
-                this.level.addParticle(new ItemBreakParticle(
-                        this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
-                        player.getInventory().getItemInHand()));
+        if (player.getInventory().getItemInHand().getId() == Item.WHEAT) {
+            player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
+            this.level.addParticle(new ItemBreakParticle(
+                    this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
+                    player.getInventory().getItemInHand()));
 
-                this.inLoveTicks = 10;
-                this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
-                player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
-                return true;
-            default:
-                return false;
+            this.inLoveTicks = 10;
+            this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
+            player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
+            return true;
         }
+        return false;
     }
 }

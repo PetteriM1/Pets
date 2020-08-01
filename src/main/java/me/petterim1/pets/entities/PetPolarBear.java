@@ -34,7 +34,6 @@ public class PetPolarBear extends EntityPet {
     @Override
     public boolean onInteract(Player player, Item item) {
         switch (player.getInventory().getItemInHand().getId()) {
-            // Minecraft Polar Bear doesn't eat fishes, but they were added because it is useless.
             case Item.RAW_FISH:
             case Item.RAW_SALMON:
                 player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());

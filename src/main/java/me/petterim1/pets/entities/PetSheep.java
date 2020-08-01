@@ -79,15 +79,14 @@ public class PetSheep extends EntityPet {
         this.setDataProperty(new ByteEntityData(DATA_COLOUR, this.color));
     }
     
-    // randomColor() was made by PetteriM1 (Sheep.java from MobPlugin)
     private int randomColor() {
         int rand = Utils.rand(0, 2500);
 
-        if (rand < 125 && 0 <= rand) return DyeColor.BLACK.getDyeData();
+        if (rand < 125 && 0 <= rand) return DyeColor.WHITE.getDyeData();
         else if (rand < 250 && 125 <= rand) return DyeColor.GRAY.getDyeData();
         else if (rand < 375 && 250 <= rand) return DyeColor.LIGHT_GRAY.getDyeData();
         else if (rand < 500 && 375 <= rand) return DyeColor.GRAY.getDyeData();
         else if (rand < 541 && 500 <= rand) return DyeColor.PINK.getDyeData();
-        else return DyeColor.WHITE.getDyeData();
+        else return DyeColor.BLACK.getDyeData();
     }
 }
