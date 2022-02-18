@@ -4,6 +4,7 @@ import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.ItemBreakParticle;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
 import me.petterim1.pets.Main;
@@ -31,7 +32,7 @@ public class PetFox extends EntityPet {
     }
 
     @Override
-    public boolean onInteract(Player player, Item item) {
+    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
         switch (player.getInventory().getItemInHand().getId()) {
             case Item.BONE:
             case Item.ROTTEN_FLESH:
@@ -51,7 +52,7 @@ public class PetFox extends EntityPet {
                 player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
                 return true;
             default:
-                return super.onInteract(player, item);
+                return super.onInteract(player, item, clickedPos);
         }
     }
 }

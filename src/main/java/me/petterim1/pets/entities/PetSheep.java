@@ -7,6 +7,7 @@ import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemDye;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.ItemBreakParticle;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.utils.DyeColor;
 import me.petterim1.pets.EntityPet;
@@ -25,8 +26,7 @@ public class PetSheep extends EntityPet {
     protected void initEntity() {
         super.initEntity();
         
-        this.color = this.namedTag.getByte("Color");
-        this.setDataProperty(new ByteEntityData(DATA_COLOUR, this.color));
+        this.setColor(this.namedTag.getByte("Color"));
     }
 
     @Override
@@ -45,7 +45,7 @@ public class PetSheep extends EntityPet {
     }
 
     @Override
-    public boolean onInteract(Player player, Item item) {
+    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
         switch (player.getInventory().getItemInHand().getId()) {
             case Item.WHEAT:
                 player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
@@ -58,7 +58,7 @@ public class PetSheep extends EntityPet {
                 player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
                 return true;
             case Item.DYE:
-                this.color = ((ItemDye) item).getDyeColor().getWoolData();
+                this.setColor(((ItemDye) item).getDyeColor().getWoolData());
                 this.saveNBT();
                 return true;
             default:
@@ -68,25 +68,30 @@ public class PetSheep extends EntityPet {
     
     @Override
     public void setRandomType() {
-        this.color = randomColor();
-        this.saveNBT();
+        this.setColor(randomColor());
     }
     
     @Override
     public void saveNBT() {
         super.saveNBT();
-        this.color = this.namedTag.getByte("Color");
-        this.setDataProperty(new ByteEntityData(DATA_COLOUR, this.color));
-    }
-    
-    private int randomColor() {
-        int rand = Utils.rand(0, 2500);
 
-        if (rand < 125 && 0 <= rand) return DyeColor.WHITE.getDyeData();
-        else if (rand < 250 && 125 <= rand) return DyeColor.GRAY.getDyeData();
-        else if (rand < 375 && 250 <= rand) return DyeColor.LIGHT_GRAY.getDyeData();
-        else if (rand < 500 && 375 <= rand) return DyeColor.GRAY.getDyeData();
-        else if (rand < 541 && 500 <= rand) return DyeColor.PINK.getDyeData();
-        else return DyeColor.BLACK.getDyeData();
+        this.namedTag.putByte("Color", this.color);
+    }
+
+    public void setColor(int woolColor) {
+        this.color = woolColor;
+        this.namedTag.putByte("Color", woolColor);
+        this.setDataProperty(new ByteEntityData(DATA_COLOUR, woolColor));
+    }
+
+    private int randomColor() {
+        int rand = Utils.rand(1, 200);
+
+        if (rand == 1) return DyeColor.PINK.getWoolData();
+        else if (rand < 8) return DyeColor.BROWN.getWoolData();
+        else if (rand < 18) return DyeColor.GRAY.getWoolData();
+        else if (rand < 28) return DyeColor.LIGHT_GRAY.getWoolData();
+        else if (rand < 38) return DyeColor.BLACK.getWoolData();
+        else return DyeColor.WHITE.getWoolData();
     }
 }

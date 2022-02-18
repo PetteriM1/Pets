@@ -5,7 +5,9 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntitySpawnEvent;
 import cn.nukkit.event.player.PlayerTeleportEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.plugin.PluginBase;
@@ -132,6 +134,7 @@ public class Main extends PluginBase implements Listener {
                         config.save();
 
                         sender.sendMessage("\u00A7d>> \u00A7aPet added");
+                        getLogger().info("Pet added for " + pl.getName());
                         return true;
                     }
 
@@ -149,8 +152,9 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
-                    String se = args[1].toLowerCase();
-                    if (!config.getString("players." + se).contains("Cat") && !config.getString("players." + se).contains("Dog") && !config.getString("players." + se).contains("Chicken") && !config.getString("players." + se).contains("Pig") && !config.getString("players." + se).contains("Fox")) {
+                    String se = pla.getName().toLowerCase();
+                    String cfgSE = config.getString("players." + se);
+                    if (!cfgSE.contains("Cat") && !cfgSE.contains("Chicken") && !cfgSE.contains("Cow") && !cfgSE.contains("Dog") && !cfgSE.contains("Fox") && !cfgSE.contains("Pig") && !cfgSE.contains("PolarBear") && !cfgSE.contains("Sheep")) {
                         sender.sendMessage("\u00A7d>> \u00A7cThis player does not have a pet");
                         return true;
                     }
@@ -164,13 +168,14 @@ public class Main extends PluginBase implements Listener {
                                 if (((EntityPet) entity).getOwner() == pla) {
                                     entity.close();
                                     sender.sendMessage("\u00A7d>> \u00A7aPet removed");
+                                    getLogger().info("Pet removed from " + pla.getName());
                                     return true;
                                 }
                             }
                         }
                     }
 
-                    sender.sendMessage("\u00A7d>> \u00A7cPet not found");
+                    sender.sendMessage("\u00A7d>> \u00A7eThe pet will be removed next time its chunk is loaded");
                     return true;
                 case "list":
                     sendPetsList(sender);
@@ -189,7 +194,8 @@ public class Main extends PluginBase implements Listener {
             }
 
             String se = sender.getName().toLowerCase();
-            if (!config.getString("players." + se).contains("Cat") && !config.getString("players." + se).contains("Chicken") && !config.getString("players." + se).contains("Cow") && !config.getString("players." + se).contains("Dog") && !config.getString("players." + se).contains("Fox") && !config.getString("players." + se).contains("Pig") && !config.getString("players." + se).contains("PolarBear") && !config.getString("players." + se).contains("Sheep")) {
+            String cfgSE = config.getString("players." + se);
+            if (!cfgSE.contains("Cat") && !cfgSE.contains("Chicken") && !cfgSE.contains("Cow") && !cfgSE.contains("Dog") && !cfgSE.contains("Fox") && !cfgSE.contains("Pig") && !cfgSE.contains("PolarBear") && !cfgSE.contains("Sheep")) {
                 sender.sendMessage("\u00A7d>> \u00A7cYou don't have a pet");
                 return true;
             }
@@ -221,8 +227,8 @@ public class Main extends PluginBase implements Listener {
                 }
             }
 
-            sender.sendMessage("\u00A7d>> \u00A7cPet not found");
-            return false;
+            sender.sendMessage("\u00A7d>> \u00A7cPet not found. It might be on an unloaded chunk");
+            return true;
         }
 
         return true;
@@ -251,7 +257,7 @@ public class Main extends PluginBase implements Listener {
         return config.getString("nameTagColor");
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onTeleport(PlayerTeleportEvent e) {
         if (!config.getBoolean("teleportPets")) return;
         Player p = e.getPlayer();
@@ -261,7 +267,22 @@ public class Main extends PluginBase implements Listener {
                     if (((EntityPet) entity).getOwner() == p) {
                         entity.setLevel(e.getTo().getLevel());
                         entity.teleport(e.getTo());
+                        return;
                     }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onSpawn(EntitySpawnEvent e) {
+        if (e.getEntity() instanceof EntityPet) {
+            String owner = e.getEntity().namedTag.getString("Owner");
+            if (owner != null && !owner.isEmpty()) {
+                String cfgSE = config.getString("players." + owner.toLowerCase());
+                if (!cfgSE.contains("Cat") && !cfgSE.contains("Chicken") && !cfgSE.contains("Cow") && !cfgSE.contains("Dog") && !cfgSE.contains("Fox") && !cfgSE.contains("Pig") && !cfgSE.contains("PolarBear") && !cfgSE.contains("Sheep")) {
+                    e.getEntity().kill();
+                    getLogger().info("Pet removed from " + owner);
                 }
             }
         }

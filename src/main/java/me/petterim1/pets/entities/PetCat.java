@@ -2,10 +2,11 @@ package me.petterim1.pets.entities;
 
 import cn.nukkit.Player;
 import cn.nukkit.entity.data.IntEntityData;
-import cn.nukkit.entity.passive.EntityOcelot;
+import cn.nukkit.entity.passive.EntityCat;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.ItemBreakParticle;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
 import me.petterim1.pets.Main;
@@ -23,13 +24,16 @@ public class PetCat extends EntityPet {
     protected void initEntity() {
         super.initEntity();
 
+        this.sitting = this.namedTag.getBoolean("Sitting");
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, this.sitting);
+
         this.type = this.namedTag.getInt("CatType");
         this.setDataProperty(new IntEntityData(DATA_VARIANT, this.type));
     }
 
     @Override
     public int getNetworkId() {
-        return EntityOcelot.NETWORK_ID;
+        return EntityCat.NETWORK_ID;
     }
 
     @Override
@@ -43,7 +47,7 @@ public class PetCat extends EntityPet {
     }
 
     @Override
-    public boolean onInteract(Player player, Item item) {
+    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
         switch (player.getInventory().getItemInHand().getId()) {
             case Item.RAW_FISH:
             case Item.RAW_SALMON:
@@ -58,13 +62,17 @@ public class PetCat extends EntityPet {
                 player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
                 return true;
             default:
-                return super.onInteract(player, item);
+                if (player == this.getOwner()) {
+                    this.setSitting();
+                }
+                return super.onInteract(player, item, clickedPos);
         }
     }
 
     @Override
     public void setRandomType() {
         this.type = Utils.rand(1, 3);
+        this.setDataProperty(new IntEntityData(DATA_VARIANT, this.type));
         this.saveNBT();
     }
 
@@ -73,6 +81,6 @@ public class PetCat extends EntityPet {
         super.saveNBT();
 
         this.namedTag.putInt("CatType", this.type);
-        this.setDataProperty(new IntEntityData(DATA_VARIANT, this.type));
+        this.namedTag.putBoolean("Sitting", this.isSitting());
     }
 }

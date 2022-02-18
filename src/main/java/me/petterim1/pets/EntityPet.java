@@ -4,6 +4,7 @@ import cn.nukkit.Player;
 import cn.nukkit.block.*;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityCreature;
+import cn.nukkit.entity.data.IntEntityData;
 import cn.nukkit.entity.passive.EntityAnimal;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.item.Item;
@@ -24,6 +25,7 @@ public abstract class EntityPet extends EntityCreature {
     protected int moveTime;
     protected int inLoveTicks;
     protected boolean findingPlayer;
+    protected boolean sitting;
 
     public EntityPet(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
@@ -31,9 +33,6 @@ public abstract class EntityPet extends EntityCreature {
         this.setOwner(nbt.getString("Owner"));
         this.setNameTagVisible(true);
         this.setDataFlag(DATA_FLAGS, DATA_FLAG_TAMED, true);
-        if (nbt.getByte("Sitting") == 1) {
-            this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, true);
-        }
 
         this.pitch = 0;
     }
@@ -51,9 +50,6 @@ public abstract class EntityPet extends EntityCreature {
         super.saveNBT();
 
         this.namedTag.putString("Owner", this.owner);
-        if (this.isSitting()) {
-            this.namedTag.putByte("Sitting", 1);
-        }
     }
 
     @Override
@@ -63,11 +59,7 @@ public abstract class EntityPet extends EntityCreature {
     }
 
     @Override
-    public boolean onInteract(Player player, Item item) {
-        if (player == this.getOwner()) {
-            this.setSitting();
-        }
-
+    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
         return false;
     }
 
@@ -107,16 +99,16 @@ public abstract class EntityPet extends EntityCreature {
         if (this.namedTag.getByte("Sitting") == 0) {
             this.namedTag.putByte("Sitting", 1);
             this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, true);
-            this.saveNBT();
+            this.sitting = true;
         } else {
             this.namedTag.putByte("Sitting", 0);
             this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, false);
-            this.saveNBT();
+            this.sitting = false;
         }
     }
 
     public boolean isSitting() {
-        return this.getDataFlag(DATA_FLAGS, DATA_FLAG_SITTING);
+        return this.sitting;
     }
 
     protected void checkTarget() {
@@ -178,11 +170,11 @@ public abstract class EntityPet extends EntityCreature {
 
     protected boolean checkJump(double dx, double dz) {
         if (this.motionY == 0.16) {
-            return this.level.getBlock(new Vector3(NukkitMath.floorDouble(this.x), (int) this.y,
-                    NukkitMath.floorDouble(this.z))) instanceof BlockLiquid;
+            int b = level.getBlockIdAt(NukkitMath.floorDouble(this.x), (int) this.y, NukkitMath.floorDouble(this.z));
+            return b == BlockID.WATER || b == BlockID.STILL_WATER;
         } else {
-            if (this.level.getBlock(new Vector3(NukkitMath.floorDouble(this.x), (int) (this.y + 0.8),
-                    NukkitMath.floorDouble(this.z))) instanceof BlockLiquid) {
+            int b = level.getBlockIdAt(NukkitMath.floorDouble(this.x), (int) (this.y + 0.8), NukkitMath.floorDouble(this.z));
+            if (b == BlockID.WATER || b == BlockID.STILL_WATER) {
                 this.motionY = 0.16;
                 return true;
             }
@@ -193,19 +185,18 @@ public abstract class EntityPet extends EntityCreature {
         }
 
         Block that = this.getLevel().getBlock(new Vector3(NukkitMath.floorDouble(this.x + dx), (int) this.y, NukkitMath.floorDouble(this.z + dz)));
-        if (this.getDirection() == null) {
-            return false;
-        }
-
         Block block = that.getSide(this.getHorizontalFacing());
-        if (!block.canPassThrough() && block.up().canPassThrough() && that.up(2).canPassThrough()) {
+        Block down = block.down();
+        if (!down.isSolid() && !block.isSolid() && !down.down().isSolid()) {
+            this.stayTime = 10;
+        } else if (!block.canPassThrough() && block.up().canPassThrough() && that.up(2).canPassThrough()) {
             if (block instanceof BlockFence || block instanceof BlockFenceGate) {
                 this.motionY = 0.08;
             } else if (this.motionY <= 0.32) {
                 this.motionY = 0.32;
-            } else if (block instanceof BlockSlab || block instanceof BlockStairs) {
+            } else if (block instanceof BlockStairs) {
                 this.motionY = 0.32;
-            } else if (this.motionY <= (0.64)) {
+            } else if (this.motionY <= 0.64) {
                 this.motionY = 0.64;
             } else {
                 this.motionY += 0.02;

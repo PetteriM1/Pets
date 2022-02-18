@@ -5,6 +5,7 @@ import cn.nukkit.entity.passive.EntityPolarBear;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.ItemBreakParticle;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
 import me.petterim1.pets.Main;
@@ -32,7 +33,7 @@ public class PetPolarBear extends EntityPet {
     }
     
     @Override
-    public boolean onInteract(Player player, Item item) {
+    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
         switch (player.getInventory().getItemInHand().getId()) {
             case Item.RAW_FISH:
             case Item.RAW_SALMON:
@@ -46,7 +47,7 @@ public class PetPolarBear extends EntityPet {
                 player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
                 return true;
             default:
-                return super.onInteract(player, item);
+                return super.onInteract(player, item, clickedPos);
         }
     }
 }
