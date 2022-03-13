@@ -51,4 +51,9 @@ public class PetPig extends EntityPet {
                 return false;
         }
     }
+
+    @Override
+    protected String getType() {
+        return "'s pig";
+    }
 }

@@ -2,9 +2,9 @@ package me.petterim1.pets;
 
 import cn.nukkit.Player;
 import cn.nukkit.block.*;
+import cn.nukkit.command.CommandSender;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityCreature;
-import cn.nukkit.entity.data.IntEntityData;
 import cn.nukkit.entity.passive.EntityAnimal;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.item.Item;
@@ -42,8 +42,10 @@ public abstract class EntityPet extends EntityCreature {
 
     @Override
     public String getName() {
-        return Main.getInstance().getNameTagColor() + this.owner + "'s pet";
+        return Main.getInstance().getNameTagColor() + this.owner + this.getType();
     }
+
+    protected abstract String getType();
 
     @Override
     public void saveNBT() {
@@ -63,8 +65,8 @@ public abstract class EntityPet extends EntityCreature {
         return false;
     }
 
-    public Player getOwner() {
-        return Main.getInstance().getServer().getPlayer(this.owner);
+    public boolean isOwner(CommandSender p) {
+        return p.getName().equals(this.owner);
     }
 
     public void setOwner(String owner) {
@@ -76,7 +78,7 @@ public abstract class EntityPet extends EntityCreature {
     public boolean targetOption(EntityCreature creature, double distance) {
         if (creature instanceof Player) {
             Player player = (Player) creature;
-            return player.isAlive() && !player.closed && player == this.getOwner() && distanceCheck(distance);
+            return player.isAlive() && !player.closed && isOwner(player) && distanceCheck(distance);
         }
 
         return false;

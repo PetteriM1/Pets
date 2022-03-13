@@ -55,4 +55,9 @@ public class PetFox extends EntityPet {
                 return super.onInteract(player, item, clickedPos);
         }
     }
+
+    @Override
+    protected String getType() {
+        return "'s fox";
+    }
 }

@@ -88,7 +88,11 @@ public class Main extends PluginBase implements Listener {
     }
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("pet")) {
+        if (cmd.getName().equals("pet")) {
+            if (!sender.hasPermission("pets.command")) {
+                return false;
+            }
+
             if (args.length == 0) {
                 sender.sendMessage("\u00A7d* \u00A7aPets \u00A7d*");
                 sender.sendMessage("\u00A76/pet add <player> <pet>");
@@ -109,6 +113,10 @@ public class Main extends PluginBase implements Listener {
                     if (pl == null) {
                         sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
                         return true;
+                    }
+
+                    if (sender.isPlayer() && sender != pl && !sender.hasPermission("pets.manage")) {
+                        return false;
                     }
 
                     String a1 = args[1].toLowerCase();
@@ -152,6 +160,10 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
+                    if (sender.isPlayer() && sender != pla && !sender.hasPermission("pets.manage")) {
+                        return false;
+                    }
+
                     String se = pla.getName().toLowerCase();
                     String cfgSE = config.getString("players." + se);
                     if (!cfgSE.contains("Cat") && !cfgSE.contains("Chicken") && !cfgSE.contains("Cow") && !cfgSE.contains("Dog") && !cfgSE.contains("Fox") && !cfgSE.contains("Pig") && !cfgSE.contains("PolarBear") && !cfgSE.contains("Sheep")) {
@@ -165,7 +177,7 @@ public class Main extends PluginBase implements Listener {
                     for (Level level : this.getServer().getLevels().values()) {
                         for (Entity entity : level.getEntities()) {
                             if (entity instanceof EntityPet) {
-                                if (((EntityPet) entity).getOwner() == pla) {
+                                if (((EntityPet) entity).isOwner(pla)) {
                                     entity.close();
                                     sender.sendMessage("\u00A7d>> \u00A7aPet removed");
                                     getLogger().info("Pet removed from " + pla.getName());
@@ -187,10 +199,14 @@ public class Main extends PluginBase implements Listener {
                     sender.sendMessage("\u00A76/pet list");
                     sender.sendMessage("\u00A76/callpet");
             }
-        } else if (cmd.getName().equalsIgnoreCase("callpet")) {
+        } else if (cmd.getName().equals("callpet")) {
             if (!(sender instanceof Player)) {
                 sender.sendMessage("\u00A7d>> \u00A7cThis command only works in game");
                 return true;
+            }
+
+            if (!sender.hasPermission("pets.call")) {
+                return false;
             }
 
             String se = sender.getName().toLowerCase();
@@ -203,7 +219,7 @@ public class Main extends PluginBase implements Listener {
             for (Level level : this.getServer().getLevels().values()) {
                 for (Entity entity : level.getEntities()) {
                     if (entity instanceof EntityPet) {
-                        if (((EntityPet) entity).getOwner() == sender) {
+                        if (((EntityPet) entity).isOwner(sender)) {
                             if (/*((Player) sender).distance(entity) > 50 ||*/ !((Player) sender).getLevel().equals(entity.getLevel())) {
                                 if (!config.getBoolean("callPetSwitchWorld")) {
                                     sender.sendMessage("\u00A7d>> \u00A7cYou cannot teleport your pet to this world");
@@ -212,8 +228,10 @@ public class Main extends PluginBase implements Listener {
 
                                 entity.setLevel(((Player) sender).getLevel());
                                 entity.teleport((Player) sender);
+                                entity.onGround = false;
                             } else {
                                 entity.teleport((Player) sender);
+                                entity.onGround = false;
                                 /*((EntityPet) entity).target = (Player) sender;
                                 ((EntityPet) entity).followTarget = (Player) sender;
                                 ((EntityPet) entity).stayTime = 0;
@@ -261,12 +279,14 @@ public class Main extends PluginBase implements Listener {
     public void onTeleport(PlayerTeleportEvent e) {
         if (!config.getBoolean("teleportPets")) return;
         Player p = e.getPlayer();
+        if (p.isSpectator()) return;
         for (Level level : this.getServer().getLevels().values()) {
             for (Entity entity : level.getEntities()) {
                 if (entity instanceof EntityPet) {
-                    if (((EntityPet) entity).getOwner() == p) {
+                    if (((EntityPet) entity).isOwner(p)) {
                         entity.setLevel(e.getTo().getLevel());
                         entity.teleport(e.getTo());
+                        entity.onGround = false;
                         return;
                     }
                 }

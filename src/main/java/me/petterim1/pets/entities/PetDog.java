@@ -83,7 +83,7 @@ public class PetDog extends EntityPet {
                 this.setCollarColor(((ItemDye) item).getDyeColor());
                 return true;
             default:
-                if (player == this.getOwner()) {
+                if (isOwner(player)) {
                     this.setSitting();
                 }
                 return super.onInteract(player, item, clickedPos);
@@ -104,5 +104,10 @@ public class PetDog extends EntityPet {
             }
         }
         this.setDataProperty(new ByteEntityData(DATA_COLOUR, this.collarColor.getWoolData()));
+    }
+
+    @Override
+    protected String getType() {
+        return "'s dog";
     }
 }

@@ -70,7 +70,7 @@ public class PetSheep extends EntityPet {
     public void setRandomType() {
         this.setColor(randomColor());
     }
-    
+
     @Override
     public void saveNBT() {
         super.saveNBT();
@@ -93,5 +93,10 @@ public class PetSheep extends EntityPet {
         else if (rand < 28) return DyeColor.LIGHT_GRAY.getWoolData();
         else if (rand < 38) return DyeColor.BLACK.getWoolData();
         else return DyeColor.WHITE.getWoolData();
+    }
+
+    @Override
+    protected String getType() {
+        return "'s sheep";
     }
 }

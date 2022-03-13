@@ -1,6 +1,6 @@
 name: Pets
 version: "${pom.version}"
-api: ["1.0.9"]
+api: ["1.0.13"]
 author: PetteriM1
 main: me.petterim1.pets.Main
 description: Pets plugin for Nukkit
@@ -10,15 +10,18 @@ commands:
   pet:
     description: Pets command
     usage: "/pet"
-    permission: pets.manage
+    permission: pets.command
   callpet:
     description: Call your pet
     usage: "/callpet"
     permission: pets.call
 
 permissions:
+  pets.command:
+    description: "Allows user to manage own pets"
+    default: op
   pets.manage:
-    description: "Allows user to manage pets"
+    description: "Allows user to manage all pets"
     default: op
   pets.call:
     description: "Allows user to call a pet"

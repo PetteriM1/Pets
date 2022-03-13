@@ -62,7 +62,7 @@ public class PetCat extends EntityPet {
                 player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
                 return true;
             default:
-                if (player == this.getOwner()) {
+                if (isOwner(player)) {
                     this.setSitting();
                 }
                 return super.onInteract(player, item, clickedPos);
@@ -82,5 +82,10 @@ public class PetCat extends EntityPet {
 
         this.namedTag.putInt("CatType", this.type);
         this.namedTag.putBoolean("Sitting", this.isSitting());
+    }
+
+    @Override
+    protected String getType() {
+        return "'s cat";
     }
 }

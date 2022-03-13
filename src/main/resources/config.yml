@@ -6,8 +6,6 @@ nameTagColor: "§b"
 feedXp: 5
 # teleport pets when owner teleports
 teleportPets: true
-# enable /callpet command
-enableCallPet: true
 # allow to tp pet to another world using /callpet
 callPetSwitchWorld: true
 # saved data, do not edit

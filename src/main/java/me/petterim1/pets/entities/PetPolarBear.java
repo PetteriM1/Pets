@@ -50,4 +50,9 @@ public class PetPolarBear extends EntityPet {
                 return super.onInteract(player, item, clickedPos);
         }
     }
+
+    @Override
+    protected String getType() {
+        return "'s polar bear";
+    }
 }
