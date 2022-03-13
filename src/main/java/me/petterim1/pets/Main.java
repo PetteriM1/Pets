@@ -89,7 +89,7 @@ public class Main extends PluginBase implements Listener {
 
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equals("pet")) {
-            if (!sender.hasPermission("pets.command")) {
+            if (!sender.hasPermission("pets.command") && !sender.hasPermission("pets.manage")) {
                 return false;
             }
 
