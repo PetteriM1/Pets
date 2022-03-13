@@ -71,7 +71,6 @@ public class Main extends PluginBase implements Listener {
                     this.getServer().getLogger().info("Pets plugin config file updated.");
                     break;
                 case 2:
-                    config.set("enablePetCall", true);
                     config.set("callPetSwitchWorld", true);
                     config.set("configVersion", configVersion);
                     config.save();
