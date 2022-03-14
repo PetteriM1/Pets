@@ -123,22 +123,20 @@ public abstract class EntityPet extends EntityCreature {
                 || !this.targetOption((EntityCreature) target, this.distanceSquared(target))) {
             double near = Integer.MAX_VALUE;
 
-            for (Entity entity : this.getLevel().getEntities()) {
-                if (entity == this || !(entity instanceof EntityCreature) || entity instanceof EntityAnimal) {
+            for (Player player : this.getLevel().getPlayers().values()) {
+                if (player == null) {
                     continue;
                 }
 
-                EntityCreature creature = (EntityCreature) entity;
-
-                double distance = this.distanceSquared(creature);
-                if (distance > near || !this.targetOption(creature, distance)) {
+                double distance = this.distanceSquared(player);
+                if (distance > near || !this.targetOption(player, distance)) {
                     continue;
                 }
                 near = distance;
 
                 this.stayTime = 0;
                 this.moveTime = 0;
-                this.target = creature;
+                this.target = player;
             }
         }
 
