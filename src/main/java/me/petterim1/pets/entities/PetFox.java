@@ -17,6 +17,21 @@ public class PetFox extends EntityPet {
     }
 
     @Override
+    protected void initEntity() {
+        super.initEntity();
+
+        this.sitting = this.namedTag.getBoolean("Sitting");
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, this.isSitting());
+    }
+
+    @Override
+    public void saveNBT() {
+        super.saveNBT();
+
+        this.namedTag.putBoolean("Sitting", this.isSitting());
+    }
+
+    @Override
     public int getNetworkId() {
         return 121;
     }
@@ -52,6 +67,9 @@ public class PetFox extends EntityPet {
                 player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
                 return true;
             default:
+                if (this.isOwner(player)) {
+                    this.setSitting();
+                }
                 return super.onInteract(player, item, clickedPos);
         }
     }

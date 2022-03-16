@@ -27,7 +27,7 @@ public class PetDog extends EntityPet {
         super.initEntity();
 
         this.sitting = this.namedTag.getBoolean("Sitting");
-        this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, this.sitting);
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, this.isSitting());
 
         if (this.namedTag.contains("CollarColor")) {
             this.setCollarColor(DyeColor.getByDyeData(this.namedTag.getByte("CollarColor")));
@@ -83,7 +83,7 @@ public class PetDog extends EntityPet {
                 this.setCollarColor(((ItemDye) item).getDyeColor());
                 return true;
             default:
-                if (isOwner(player)) {
+                if (this.isOwner(player)) {
                     this.setSitting();
                 }
                 return super.onInteract(player, item, clickedPos);

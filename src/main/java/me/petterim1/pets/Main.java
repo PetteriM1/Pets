@@ -218,7 +218,7 @@ public class Main extends PluginBase implements Listener {
             for (Level level : this.getServer().getLevels().values()) {
                 for (Entity entity : level.getEntities()) {
                     if (entity instanceof EntityPet) {
-                        if (((EntityPet) entity).isOwner(sender)) {
+                        if (((EntityPet) entity).isOwner((Player) sender)) {
                             if (/*((Player) sender).distance(entity) > 50 ||*/ !((Player) sender).getLevel().equals(entity.getLevel())) {
                                 if (!config.getBoolean("callPetSwitchWorld")) {
                                     sender.sendMessage("\u00A7d>> \u00A7cYou cannot teleport your pet to this world");

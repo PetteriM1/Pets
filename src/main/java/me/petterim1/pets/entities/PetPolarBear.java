@@ -18,18 +18,26 @@ public class PetPolarBear extends EntityPet {
     }
 
     @Override
+    protected void initEntity() {
+        super.initEntity();
+
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_BABY, true);
+        this.setScale(0.6f);
+    }
+
+    @Override
     public int getNetworkId() {
         return EntityPolarBear.NETWORK_ID;
     }
 
     @Override
     public float getWidth() {
-        return 1.3f;
+        return 0.65f;
     }
 
     @Override
     public float getHeight() {
-        return 1.4f;
+        return 0.7f;
     }
     
     @Override

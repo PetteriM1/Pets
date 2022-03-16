@@ -27,6 +27,8 @@ public class PetSheep extends EntityPet {
         super.initEntity();
         
         this.setColor(this.namedTag.getByte("Color"));
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_BABY, true);
+        this.setScale(0.6f);
     }
 
     @Override
@@ -36,12 +38,12 @@ public class PetSheep extends EntityPet {
 
     @Override
     public float getWidth() {
-        return 0.9f;
+        return 0.45f;
     }
 
     @Override
     public float getHeight() {
-        return 1.3f;
+        return 0.65f;
     }
 
     @Override

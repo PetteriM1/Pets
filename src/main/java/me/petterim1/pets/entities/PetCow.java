@@ -18,6 +18,14 @@ public class PetCow extends EntityPet {
     }
 
     @Override
+    protected void initEntity() {
+        super.initEntity();
+
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_BABY, true);
+        this.setScale(0.6f);
+    }
+
+    @Override
     public int getNetworkId() {
         return EntityCow.NETWORK_ID;
     }
@@ -29,7 +37,7 @@ public class PetCow extends EntityPet {
 
     @Override
     public float getHeight() {
-        return 1.4f;
+        return 0.65f;
     }
 
     @Override

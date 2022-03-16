@@ -18,18 +18,26 @@ public class PetPig extends EntityPet {
     }
 
     @Override
+    protected void initEntity() {
+        super.initEntity();
+
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_BABY, true);
+        this.setScale(0.6f);
+    }
+
+    @Override
     public int getNetworkId() {
         return EntityPig.NETWORK_ID;
     }
 
     @Override
     public float getWidth() {
-        return 0.9f;
+        return 0.45f;
     }
 
     @Override
     public float getHeight() {
-        return 0.9f;
+        return 0.45f;
     }
 
     @Override

@@ -2,10 +2,8 @@ package me.petterim1.pets;
 
 import cn.nukkit.Player;
 import cn.nukkit.block.*;
-import cn.nukkit.command.CommandSender;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityCreature;
-import cn.nukkit.entity.passive.EntityAnimal;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
@@ -65,8 +63,8 @@ public abstract class EntityPet extends EntityCreature {
         return false;
     }
 
-    public boolean isOwner(CommandSender p) {
-        return p.getName().equals(this.owner);
+    public boolean isOwner(Player p) {
+        return p.getName().equalsIgnoreCase(this.owner);
     }
 
     public void setOwner(String owner) {
