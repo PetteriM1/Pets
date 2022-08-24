@@ -1,6 +1,7 @@
 package me.petterim1.pets.entities;
 
 import cn.nukkit.Player;
+import cn.nukkit.Server;
 import cn.nukkit.entity.data.ByteEntityData;
 import cn.nukkit.entity.data.LongEntityData;
 import cn.nukkit.item.Item;
@@ -9,6 +10,7 @@ import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
+import cn.nukkit.network.protocol.EntityEventPacket;
 import cn.nukkit.utils.DyeColor;
 import me.petterim1.pets.EntityPet;
 import me.petterim1.pets.Main;
@@ -17,6 +19,7 @@ import me.petterim1.pets.Utils;
 public class PetDog extends EntityPet {
 
     private DyeColor collarColor = DyeColor.RED;
+    private int afterInWater = -1;
 
     public PetDog(FullChunk chunk, CompoundTag nbt) {
         super(chunk, nbt);
@@ -88,6 +91,27 @@ public class PetDog extends EntityPet {
                 }
                 return super.onInteract(player, item, clickedPos);
         }
+    }
+
+    @Override
+    public boolean onUpdate(int currentTick) {
+        boolean update = super.onUpdate(currentTick);
+        if (update) {
+            if (this.isInsideOfWater()) {
+                this.afterInWater = 0;
+            } else if (this.afterInWater != -1) {
+                this.afterInWater++;
+            }
+            if (this.afterInWater > 60) {
+                this.afterInWater = -1;
+                this.stayTime = 40;
+                EntityEventPacket packet = new EntityEventPacket();
+                packet.eid = this.getId();
+                packet.event = EntityEventPacket.SHAKE_WET;
+                Server.broadcastPacket(this.getViewers().values(), packet);
+            }
+        }
+        return update;
     }
 
     public void setCollarColor(DyeColor color) {
