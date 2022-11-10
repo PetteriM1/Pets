@@ -100,39 +100,36 @@ public class Main extends PluginBase implements Listener {
             }
 
             if (args.length == 0) {
-                sender.sendMessage("\u00A7d* \u00A7aPets \u00A7d*");
-                sender.sendMessage("\u00A76/pet add <player> <pet>");
-                sender.sendMessage("\u00A76/pet remove <player>");
-                sender.sendMessage("\u00A76/pet list");
-                sender.sendMessage("\u00A76/callpet");
+                sendPetsList(sender);
                 return true;
             }
 
             switch (args[0].toLowerCase()) {
                 case "add":
-                    if (args.length != 3) {
-                        sender.sendMessage("\u00A76Usage: /pet add <player> <pet>");
+                    Player pl;
+                    if (args.length == 2 && sender instanceof Player) {
+                        pl = (Player) sender;
+                    } else if (args.length != 3) {
+                        sender.sendMessage("\u00A76Usage: /pet add [player] <pet>");
                         return true;
+                    } else {
+                        pl = this.getServer().getPlayerExact(args[1]);
+                        if (pl == null) {
+                            sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
+                            return true;
+                        }
                     }
 
-                    Player pl = this.getServer().getPlayerExact(args[1]);
-                    if (pl == null) {
-                        sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
-                        return true;
-                    }
-
-                    if (sender.isPlayer() && sender != pl && !sender.hasPermission("pets.manage")) {
+                    if (sender instanceof Player && sender != pl && !sender.hasPermission("pets.manage")) {
                         return false;
                     }
 
-                    String a1 = args[1].toLowerCase();
-                    if (hasPet(a1)) {
-                        sender.sendMessage("\u00A7d>> \u00A7cThis player already have a pet");
+                    if (hasPet(pl.getName())) {
+                        sender.sendMessage("\u00A7d>> \u00A7cThis player already has a pet");
                         return true;
                     }
 
-                    Entity ent = Entity.createEntity("Pet" + args[2], pl);
-
+                    Entity ent = Entity.createEntity("Pet" + args[args.length - 1], pl);
                     if (ent != null) {
                         if (!(ent instanceof EntityPet)) {
                             ent.close();
@@ -144,7 +141,7 @@ public class Main extends PluginBase implements Listener {
                         ((EntityPet) ent).setRandomType();
                         ent.spawnToAll();
 
-                        config.set("players." + a1, args[2]);
+                        config.set("players." + pl.getName().toLowerCase(), args[args.length - 1]);
                         config.save();
 
                         sender.sendMessage("\u00A7d>> \u00A7aPet added");
@@ -152,25 +149,27 @@ public class Main extends PluginBase implements Listener {
                         return true;
                     }
 
-                    sender.sendMessage("\u00A7d>> \u00A7cUnable to add pet");
+                    sender.sendMessage("\u00A7d>> \u00A7cUnknown pet: " + args[args.length - 1]);
                     return true;
                 case "remove":
-                    if (args.length != 2) {
-                        sender.sendMessage("\u00A76Usage: /pet remove <player>");
+                    if (args.length == 1 && sender instanceof Player) {
+                        pl = (Player) sender;
+                    } else if (args.length != 2) {
+                        sender.sendMessage("\u00A76Usage: /pet remove [player]");
                         return true;
+                    } else {
+                        pl = this.getServer().getPlayerExact(args[1]);
+                        if (pl == null) {
+                            sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
+                            return true;
+                        }
                     }
 
-                    Player pla = this.getServer().getPlayerExact(args[1]);
-                    if (pla == null) {
-                        sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
-                        return true;
-                    }
-
-                    if (sender.isPlayer() && sender != pla && !sender.hasPermission("pets.manage")) {
+                    if (sender instanceof Player && sender != pl && !sender.hasPermission("pets.manage")) {
                         return false;
                     }
 
-                    String se = pla.getName().toLowerCase();
+                    String se = pl.getName().toLowerCase();
                     if (!hasPet(se)) {
                         sender.sendMessage("\u00A7d>> \u00A7cThis player does not have a pet");
                         return true;
@@ -182,10 +181,10 @@ public class Main extends PluginBase implements Listener {
                     for (Level level : this.getServer().getLevels().values()) {
                         for (Entity entity : level.getEntities()) {
                             if (entity instanceof EntityPet) {
-                                if (((EntityPet) entity).isOwner(pla)) {
+                                if (((EntityPet) entity).isOwner(pl)) {
                                     entity.close();
                                     sender.sendMessage("\u00A7d>> \u00A7aPet removed");
-                                    getLogger().info("Pet removed from " + pla.getName());
+                                    getLogger().info("Pet removed from " + pl.getName());
                                     return true;
                                 }
                             }
@@ -198,11 +197,7 @@ public class Main extends PluginBase implements Listener {
                     sendPetsList(sender);
                     return true;
                 default:
-                    sender.sendMessage("\u00A7d* \u00A7aPets \u00A7d*");
-                    sender.sendMessage("\u00A76/pet add <player> <pet>");
-                    sender.sendMessage("\u00A76/pet remove <player>");
-                    sender.sendMessage("\u00A76/pet list");
-                    sender.sendMessage("\u00A76/callpet");
+                    sendCommandList(sender);
             }
         } else if (cmd.getName().equals("callpet")) {
             if (!(sender instanceof Player)) {
@@ -259,6 +254,14 @@ public class Main extends PluginBase implements Listener {
         sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Chicken, Cow, Dog, Fox, Pig, PolarBear, Sheep");
     }
 
+    private static void sendCommandList(CommandSender sender) {
+        sender.sendMessage("\u00A7d* \u00A7aPets \u00A7d*");
+        sender.sendMessage("\u00A76/pet add [player] <pet>");
+        sender.sendMessage("\u00A76/pet remove [player]");
+        sender.sendMessage("\u00A76/pet list");
+        sender.sendMessage("\u00A76/callpet");
+    }
+
     public boolean hasPet(String player) {
         String cfgSE = config.getString("players." + player.toLowerCase());
         return cfgSE.equals("Cat") || cfgSE.equals("Chicken") || cfgSE.equals("Cow") || cfgSE.equals("Dog") || cfgSE.equals("Fox") || cfgSE.equals("Pig") || cfgSE.equals("PolarBear") || cfgSE.equals("Sheep");
@@ -289,12 +292,12 @@ public class Main extends PluginBase implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onTeleport(PlayerTeleportEvent e) {
-        Player p = e.getPlayer();
-        if (p.isSpectator() || !canTeleportPet()) return;
+        Player pl = e.getPlayer();
+        if (pl.isSpectator() || !canTeleportPet()) return;
         for (Level level : this.getServer().getLevels().values()) {
             for (Entity entity : level.getEntities()) {
                 if (entity instanceof EntityPet) {
-                    if (((EntityPet) entity).isOwner(p)) {
+                    if (((EntityPet) entity).isOwner(pl)) {
                         entity.setLevel(e.getTo().getLevel());
                         entity.teleport(e.getTo());
                         entity.onGround = false;
