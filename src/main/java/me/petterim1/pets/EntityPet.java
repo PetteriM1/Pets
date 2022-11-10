@@ -320,7 +320,15 @@ public abstract class EntityPet extends EntityCreature {
             this.moveTime -= tickDiff;
         }
 
-        if (inLoveTicks > 0) {
+        if (this.y < 0 && Main.getInstance().canTeleportPet()) {
+            Player pl = this.getServer().getPlayerExact(this.owner);
+            if (pl != null && !pl.isSpectator() && pl.getY() > 0) {
+                this.teleport(pl);
+                this.onGround = false;
+            }
+        }
+
+        if (this.inLoveTicks > 0) {
             this.inLoveTicks -= tickDiff;
             if (this.age % 20 == 0) {
                 for (int i = 0; i < 3; i++) {

@@ -53,7 +53,7 @@ public class PetPig extends EntityPet {
 
                 this.inLoveTicks = 10;
                 this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
-                player.addExperience(Main.getInstance().getPluginConfig().getInt("feedXp"));
+                player.addExperience(Main.getInstance().getFeedXp());
                 return true;
             default:
                 return false;

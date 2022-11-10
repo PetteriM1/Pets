@@ -46,6 +46,9 @@ public class Main extends PluginBase implements Listener {
     private static final int configVersion = 3;
     private Config config;
     private static Main instance;
+    private String nameTagColor;
+    private boolean teleportPets;
+    private int feedXp;
 
     public static Main getInstance() {
         return instance;
@@ -81,6 +84,10 @@ public class Main extends PluginBase implements Listener {
                     this.getServer().getLogger().warning("Pets plugin config file version is unknown. Unable to update.");
             }
         }
+
+        this.nameTagColor = config.getString("nameTagColor");
+        this.teleportPets = config.getBoolean("teleportPets");
+        this.feedXp = config.getInt("feedXp");
 
         this.registerPets();
         this.getServer().getPluginManager().registerEvents(this, this);
@@ -119,7 +126,7 @@ public class Main extends PluginBase implements Listener {
                     }
 
                     String a1 = args[1].toLowerCase();
-                    if (config.getString("players." + a1).contains("Cat") || config.getString("players." + a1).contains("Dog") || config.getString("players." + a1).contains("Chicken") || config.getString("players." + a1).contains("Pig") || config.getString("players." + a1).contains("Fox")) {
+                    if (hasPet(a1)) {
                         sender.sendMessage("\u00A7d>> \u00A7cThis player already have a pet");
                         return true;
                     }
@@ -164,8 +171,7 @@ public class Main extends PluginBase implements Listener {
                     }
 
                     String se = pla.getName().toLowerCase();
-                    String cfgSE = config.getString("players." + se);
-                    if (!cfgSE.contains("Cat") && !cfgSE.contains("Chicken") && !cfgSE.contains("Cow") && !cfgSE.contains("Dog") && !cfgSE.contains("Fox") && !cfgSE.contains("Pig") && !cfgSE.contains("PolarBear") && !cfgSE.contains("Sheep")) {
+                    if (!hasPet(se)) {
                         sender.sendMessage("\u00A7d>> \u00A7cThis player does not have a pet");
                         return true;
                     }
@@ -208,9 +214,7 @@ public class Main extends PluginBase implements Listener {
                 return false;
             }
 
-            String se = sender.getName().toLowerCase();
-            String cfgSE = config.getString("players." + se);
-            if (!cfgSE.contains("Cat") && !cfgSE.contains("Chicken") && !cfgSE.contains("Cow") && !cfgSE.contains("Dog") && !cfgSE.contains("Fox") && !cfgSE.contains("Pig") && !cfgSE.contains("PolarBear") && !cfgSE.contains("Sheep")) {
+            if (!hasPet(sender.getName())) {
                 sender.sendMessage("\u00A7d>> \u00A7cYou don't have a pet");
                 return true;
             }
@@ -255,8 +259,9 @@ public class Main extends PluginBase implements Listener {
         sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Chicken, Cow, Dog, Fox, Pig, PolarBear, Sheep");
     }
 
-    public Config getPluginConfig() {
-        return this.config;
+    public boolean hasPet(String player) {
+        String cfgSE = config.getString("players." + player.toLowerCase());
+        return cfgSE.equals("Cat") || cfgSE.equals("Chicken") || cfgSE.equals("Cow") || cfgSE.equals("Dog") || cfgSE.equals("Fox") || cfgSE.equals("Pig") || cfgSE.equals("PolarBear") || cfgSE.equals("Sheep");
     }
 
     private void registerPets() {
@@ -270,15 +275,22 @@ public class Main extends PluginBase implements Listener {
         Entity.registerEntity("PetSheep", PetSheep.class);
     }
 
-    String getNameTagColor() {
-        return config.getString("nameTagColor");
+    public String getNameTagColor() {
+        return this.nameTagColor;
+    }
+
+    public boolean canTeleportPet() {
+        return this.teleportPets;
+    }
+
+    public int getFeedXp() {
+        return this.feedXp;
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onTeleport(PlayerTeleportEvent e) {
-        if (!config.getBoolean("teleportPets")) return;
         Player p = e.getPlayer();
-        if (p.isSpectator()) return;
+        if (p.isSpectator() || !canTeleportPet()) return;
         for (Level level : this.getServer().getLevels().values()) {
             for (Entity entity : level.getEntities()) {
                 if (entity instanceof EntityPet) {
@@ -298,8 +310,7 @@ public class Main extends PluginBase implements Listener {
         if (e.getEntity() instanceof EntityPet) {
             String owner = e.getEntity().namedTag.getString("Owner");
             if (owner != null && !owner.isEmpty()) {
-                String cfgSE = config.getString("players." + owner.toLowerCase());
-                if (!cfgSE.contains("Cat") && !cfgSE.contains("Chicken") && !cfgSE.contains("Cow") && !cfgSE.contains("Dog") && !cfgSE.contains("Fox") && !cfgSE.contains("Pig") && !cfgSE.contains("PolarBear") && !cfgSE.contains("Sheep")) {
+                if (!hasPet(owner)) {
                     e.getEntity().kill();
                     getLogger().info("Pet removed from " + owner);
                 }
