@@ -2,13 +2,14 @@ package me.petterim1.pets;
 
 import cn.nukkit.Player;
 import cn.nukkit.block.*;
-import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityCreature;
 import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.inventory.PlayerInventory;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
 import cn.nukkit.level.particle.CriticalParticle;
 import cn.nukkit.level.particle.HeartParticle;
+import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.math.NukkitMath;
 import cn.nukkit.math.Vector2;
 import cn.nukkit.math.Vector3;
@@ -18,7 +19,6 @@ public abstract class EntityPet extends EntityCreature {
 
     protected String owner;
     protected Vector3 target;
-    protected Entity followTarget;
     protected int stayTime;
     protected int moveTime;
     protected int inLoveTicks;
@@ -63,6 +63,16 @@ public abstract class EntityPet extends EntityCreature {
         return false;
     }
 
+    protected void feed(Player player, Item item) {
+        player.addExperience(Main.getInstance().getFeedXp());
+        this.level.addParticle(new ItemBreakParticle(
+                this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
+                item));
+
+        this.inLoveTicks = 10;
+        this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
+    }
+
     public boolean isOwner(Player p) {
         return p.getName().equalsIgnoreCase(this.owner);
     }
@@ -73,7 +83,7 @@ public abstract class EntityPet extends EntityCreature {
         this.saveNBT();
     }
 
-    public boolean targetOption(EntityCreature creature, double distance) {
+    protected boolean targetOption(EntityCreature creature, double distance) {
         if (creature instanceof Player) {
             Player player = (Player) creature;
             return player.isAlive() && !player.closed && isOwner(player) && distanceCheck(distance);
@@ -83,13 +93,22 @@ public abstract class EntityPet extends EntityCreature {
     }
 
     private boolean distanceCheck(double distance) {
-        boolean dis = distance < 300 && distance > 12;
+        boolean dis = distance < 400 && distance > 36;
+
+        PlayerInventory inv;
+        if (this.target instanceof Player && (inv = ((Player) this.target).getInventory()) != null && this.isFeedItem(inv.getItemInHand().getId())) { //feed item
+            dis = true;
+        }
 
         if (dis && findingPlayer) {
             findingPlayer = false;
         }
 
         return dis || findingPlayer;
+    }
+
+    protected boolean isFeedItem(int id) {
+        return false;
     }
 
     public void setSitting() {
@@ -105,6 +124,8 @@ public abstract class EntityPet extends EntityCreature {
             this.setDataFlag(DATA_FLAGS, DATA_FLAG_SITTING, false);
             this.sitting = false;
         }
+
+        this.onGround = false;
     }
 
     public boolean isSitting() {
@@ -112,10 +133,6 @@ public abstract class EntityPet extends EntityCreature {
     }
 
     protected void checkTarget() {
-        if (this.followTarget != null && !this.followTarget.closed && this.followTarget.isAlive()) {
-            return;
-        }
-
         Vector3 target = this.target;
         if (!(target instanceof EntityCreature)
                 || !this.targetOption((EntityCreature) target, this.distanceSquared(target))) {
@@ -155,13 +172,13 @@ public abstract class EntityPet extends EntityCreature {
         } else if (Utils.rand(1, 400) == 1) {
             x = Utils.rand(10, 30);
             z = Utils.rand(10, 30);
-            this.stayTime = Utils.rand(100, 200);
+            this.stayTime = Utils.rand(100, 300);
             this.target = this.add(Utils.rand() ? x : -x, Utils.rand(-20, 20) / 10, Utils.rand() ? z : -z);
         } else if (this.moveTime <= 0 || this.target == null) {
             x = Utils.rand(10, 30);
             z = Utils.rand(10, 30);
             this.stayTime = 0;
-            this.moveTime = Utils.rand(60, 200);
+            this.moveTime = Utils.rand(60, 100);
             this.target = this.add(Utils.rand() ? x : -x, 0, Utils.rand() ? z : -z);
         }
     }
@@ -182,12 +199,9 @@ public abstract class EntityPet extends EntityCreature {
             return false;
         }
 
-        Block that = this.getLevel().getBlock(new Vector3(NukkitMath.floorDouble(this.x + dx), (int) this.y, NukkitMath.floorDouble(this.z + dz)));
+        Block that = this.getLevel().getBlock(NukkitMath.floorDouble(this.x + dx), (int) this.y, NukkitMath.floorDouble(this.z + dz));
         Block block = that.getSide(this.getHorizontalFacing());
-        Block down = block.down();
-        if (!down.isSolid() && !block.isSolid() && !down.down().isSolid()) {
-            this.stayTime = 10;
-        } else if (!block.canPassThrough() && block.up().canPassThrough() && that.up(2).canPassThrough()) {
+        if (!block.canPassThrough() && block.up().canPassThrough() && that.up(2).canPassThrough()) {
             if (block instanceof BlockFence || block instanceof BlockFenceGate) {
                 this.motionY = 0.08;
             } else if (this.motionY <= 0.32) {
@@ -204,30 +218,9 @@ public abstract class EntityPet extends EntityCreature {
         return false;
     }
 
-    public Vector3 updateMove(int tickDiff) {
+    public void updateMove(int tickDiff) {
         if (this.isSitting()) {
-            return this.target;
-        }
-
-        if (this.followTarget != null && !this.followTarget.closed && this.followTarget.isAlive()) {
-            double x = this.followTarget.x - this.x;
-            double z = this.followTarget.z - this.z;
-
-            double diff = Math.abs(x) + Math.abs(z);
-            if (this.stayTime > 0 || (!findingPlayer && this.distance(this.followTarget) <= (this.getWidth() + 0.0d) / 2 + 0.05)) {
-                this.motionX = 0;
-                this.motionZ = 0;
-            } else {
-                if (this.isInsideOfWater()) {
-                    this.motionX = 0.06 * (x / diff);
-                    this.motionZ = 0.06 * (z / diff);
-                } else {
-                    this.motionX = 0.12 * (x / diff);
-                    this.motionZ = 0.12 * (z / diff);
-                }
-            }
-            this.yaw = Math.toDegrees(-Math.atan2(x / diff, z / diff));
-            return this.followTarget;
+            return;
         }
 
         Vector3 before = this.target;
@@ -237,7 +230,7 @@ public abstract class EntityPet extends EntityCreature {
             double z = this.target.z - this.z;
 
             double diff = Math.abs(x) + Math.abs(z);
-            if (this.stayTime > 0 || (!findingPlayer && this.distance(this.target) <= (this.getWidth() + 0.0d) / 2 + 0.05)) {
+            if (diff == 0 || this.stayTime > 0 || (!findingPlayer && this.distance(this.target) <= this.getWidth() + 1)) {
                 this.motionX = 0;
                 this.motionZ = 0;
             } else {
@@ -249,7 +242,7 @@ public abstract class EntityPet extends EntityCreature {
                     this.motionZ = 0.18 * (z / diff);
                 }
             }
-            this.yaw = Math.toDegrees(-Math.atan2(x / diff, z / diff));
+            if (diff != 0) this.yaw = Math.toDegrees(-Math.atan2(x / diff, z / diff));
         }
 
         double dx = this.motionX * tickDiff;
@@ -272,8 +265,8 @@ public abstract class EntityPet extends EntityCreature {
             if (this.onGround) {
                 this.motionY = 0;
             } else if (this.motionY > -0.32) {
-                if (!(this.level.getBlock(new Vector3(NukkitMath.floorDouble(this.x), (int) (this.y + 0.8),
-                        NukkitMath.floorDouble(this.z))) instanceof BlockLiquid)) {
+                if (!(this.level.getBlock(NukkitMath.floorDouble(this.x), (int) (this.y + 0.8),
+                        NukkitMath.floorDouble(this.z)) instanceof BlockLiquid)) {
                     this.motionY -= 0.08;
                 }
             } else {
@@ -282,8 +275,6 @@ public abstract class EntityPet extends EntityCreature {
         }
 
         this.updateMovement();
-
-        return this.target;
     }
 
     @Override
@@ -301,16 +292,7 @@ public abstract class EntityPet extends EntityCreature {
         this.lastUpdate = currentTick;
         this.entityBaseTick(tickDiff);
 
-        Vector3 target = this.updateMove(tickDiff);
-
-        if (target instanceof Player) {
-            if (this.distanceSquared(target) <= 20) {
-                this.x = this.lastX;
-                this.y = this.lastY;
-                this.z = this.lastZ;
-            }
-        }
-
+        this.updateMove(tickDiff);
         return true;
     }
 
@@ -318,6 +300,10 @@ public abstract class EntityPet extends EntityCreature {
     public boolean entityBaseTick(int tickDiff) {
         if (this.moveTime > 0) {
             this.moveTime -= tickDiff;
+        }
+
+        if (this.age % 20 == 0 && this.level.getBlockIdAt(this.getFloorX(), this.getFloorY() - 1, this.getFloorZ()) == 0) {
+            this.onGround = false;
         }
 
         if (this.y < 0 && Main.getInstance().canTeleportPet()) {
@@ -352,4 +338,6 @@ public abstract class EntityPet extends EntityCreature {
     protected float getMountedYOffset() {
         return getHeight() * 0.75F;
     }
+
+    protected abstract String getSaveName();
 }

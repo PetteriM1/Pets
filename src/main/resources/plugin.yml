@@ -4,7 +4,7 @@ api: ["1.0.13"]
 author: PetteriM1
 main: me.petterim1.pets.Main
 description: Pets plugin for Nukkit
-website: https://github.com/PetteriM1/Pets/
+website: https://nukkitx.com/resources/pets.171/
 
 commands:
   pet:

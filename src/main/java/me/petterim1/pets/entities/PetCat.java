@@ -5,11 +5,9 @@ import cn.nukkit.entity.data.IntEntityData;
 import cn.nukkit.entity.passive.EntityCat;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
-import me.petterim1.pets.Main;
 import me.petterim1.pets.Utils;
 
 public class PetCat extends EntityPet {
@@ -47,26 +45,20 @@ public class PetCat extends EntityPet {
     }
 
     @Override
-    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
-        switch (player.getInventory().getItemInHand().getId()) {
-            case Item.RAW_FISH:
-            case Item.RAW_SALMON:
-            case Item.CLOWNFISH:
-                player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
-                this.level.addParticle(new ItemBreakParticle(
-                        this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
-                        player.getInventory().getItemInHand()));
+    protected boolean isFeedItem(int id) {
+        return id == Item.RAW_FISH || id == Item.RAW_SALMON || id == Item.CLOWNFISH;
+    }
 
-                this.inLoveTicks = 10;
-                this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
-                player.addExperience(Main.getInstance().getFeedXp());
-                return true;
-            default:
-                if (this.isOwner(player)) {
-                    this.setSitting();
-                }
-                return super.onInteract(player, item, clickedPos);
+    @Override
+    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
+        if (this.isFeedItem(item.getId())) {
+            this.feed(player, item);
+            return true;
         }
+        if (this.isOwner(player)) {
+            this.setSitting();
+        }
+        return super.onInteract(player, item, clickedPos);
     }
 
     @Override
@@ -87,5 +79,10 @@ public class PetCat extends EntityPet {
     @Override
     protected String getType() {
         return "'s cat";
+    }
+
+    @Override
+    protected String getSaveName() {
+        return "Cat";
     }
 }

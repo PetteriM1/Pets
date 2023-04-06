@@ -226,15 +226,18 @@ public class Main extends PluginBase implements Listener {
 
                                 entity.setLevel(((Player) sender).getLevel());
                                 entity.teleport((Player) sender);
-                                entity.onGround = false;
                             } else {
                                 entity.teleport((Player) sender);
-                                entity.onGround = false;
                                 /*((EntityPet) entity).target = (Player) sender;
-                                ((EntityPet) entity).followTarget = (Player) sender;
                                 ((EntityPet) entity).stayTime = 0;
                                 ((EntityPet) entity).findingPlayer = true;*/
                             }
+
+                            entity.onGround = false;
+                            if (((EntityPet) entity).isSitting()) {
+                                ((EntityPet) entity).setSitting();
+                            }
+                            entity.scheduleUpdate();
 
                             sender.sendMessage("\u00A7d>> \u00A7aPet called");
                             return true;
@@ -267,6 +270,10 @@ public class Main extends PluginBase implements Listener {
         return cfgSE.equals("Cat") || cfgSE.equals("Chicken") || cfgSE.equals("Cow") || cfgSE.equals("Dog") || cfgSE.equals("Fox") || cfgSE.equals("Pig") || cfgSE.equals("PolarBear") || cfgSE.equals("Sheep");
     }
 
+    public boolean hasPet(String player, String pet) {
+        return config.getString("players." + player.toLowerCase()).equals(pet);
+    }
+
     private void registerPets() {
         Entity.registerEntity("PetCat", PetCat.class);
         Entity.registerEntity("PetChicken", PetChicken.class);
@@ -297,10 +304,12 @@ public class Main extends PluginBase implements Listener {
         for (Level level : this.getServer().getLevels().values()) {
             for (Entity entity : level.getEntities()) {
                 if (entity instanceof EntityPet) {
-                    if (((EntityPet) entity).isOwner(pl)) {
+                    if (((EntityPet) entity).isOwner(pl) && !((EntityPet) entity).isSitting()) {
                         entity.setLevel(e.getTo().getLevel());
                         entity.teleport(e.getTo());
                         entity.onGround = false;
+                        ((EntityPet) entity).setSitting();
+                        entity.scheduleUpdate();
                         return;
                     }
                 }
@@ -313,7 +322,7 @@ public class Main extends PluginBase implements Listener {
         if (e.getEntity() instanceof EntityPet) {
             String owner = e.getEntity().namedTag.getString("Owner");
             if (owner != null && !owner.isEmpty()) {
-                if (!hasPet(owner)) {
+                if (!hasPet(owner, ((EntityPet) e.getEntity()).getSaveName())) {
                     e.getEntity().kill();
                     getLogger().info("Pet removed from " + owner);
                 }

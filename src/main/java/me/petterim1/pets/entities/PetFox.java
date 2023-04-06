@@ -3,12 +3,9 @@ package me.petterim1.pets.entities;
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
-import me.petterim1.pets.Main;
-import me.petterim1.pets.Utils;
 
 public class PetFox extends EntityPet {
 
@@ -47,35 +44,29 @@ public class PetFox extends EntityPet {
     }
 
     @Override
-    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
-        switch (player.getInventory().getItemInHand().getId()) {
-            case Item.BONE:
-            case Item.ROTTEN_FLESH:
-            case Item.RAW_BEEF:
-            case Item.RAW_MUTTON:
-            case Item.RAW_RABBIT:
-            case Item.RAW_CHICKEN:
-            case Item.RAW_PORKCHOP:
-            case Item.SWEET_BERRIES:
-                player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
-                this.level.addParticle(new ItemBreakParticle(
-                        this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
-                        player.getInventory().getItemInHand()));
+    protected boolean isFeedItem(int id) {
+        return id == Item.ROTTEN_FLESH || id == Item.RAW_BEEF || id == Item.RAW_MUTTON || id == Item.RAW_RABBIT || id == Item.RAW_CHICKEN || id == Item.RAW_PORKCHOP || id == Item.SWEET_BERRIES;
+    }
 
-                this.inLoveTicks = 10;
-                this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
-                player.addExperience(Main.getInstance().getFeedXp());
-                return true;
-            default:
-                if (this.isOwner(player)) {
-                    this.setSitting();
-                }
-                return super.onInteract(player, item, clickedPos);
+    @Override
+    public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
+        if (this.isFeedItem(item.getId())) {
+            this.feed(player, item);
+            return true;
         }
+        if (this.isOwner(player)) {
+            this.setSitting();
+        }
+        return super.onInteract(player, item, clickedPos);
     }
 
     @Override
     protected String getType() {
         return "'s fox";
+    }
+
+    @Override
+    protected String getSaveName() {
+        return "Fox";
     }
 }

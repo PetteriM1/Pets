@@ -6,12 +6,10 @@ import cn.nukkit.entity.passive.EntitySheep;
 import cn.nukkit.item.Item;
 import cn.nukkit.item.ItemDye;
 import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import cn.nukkit.utils.DyeColor;
 import me.petterim1.pets.EntityPet;
-import me.petterim1.pets.Main;
 import me.petterim1.pets.Utils;
 
 public class PetSheep extends EntityPet {
@@ -43,29 +41,24 @@ public class PetSheep extends EntityPet {
 
     @Override
     public float getHeight() {
-        return 0.65f;
+        return 1f;
+    }
+
+    @Override
+    protected boolean isFeedItem(int id) {
+        return id == Item.WHEAT;
     }
 
     @Override
     public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
-        switch (player.getInventory().getItemInHand().getId()) {
-            case Item.WHEAT:
-                player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
-                this.level.addParticle(new ItemBreakParticle(
-                        this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
-                        player.getInventory().getItemInHand()));
-
-                this.inLoveTicks = 10;
-                this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
-                player.addExperience(Main.getInstance().getFeedXp());
-                return true;
-            case Item.DYE:
-                this.setColor(((ItemDye) item).getDyeColor().getWoolData());
-                this.saveNBT();
-                return true;
-            default:
-                return false;
+        if (this.isFeedItem(item.getId())) {
+            this.feed(player, item);
+            return true;
+        } else if (item.getId() == Item.DYE) {
+            this.setColor(((ItemDye) item).getDyeColor().getWoolData());
+            return true;
         }
+        return super.onInteract(player, item, clickedPos);
     }
     
     @Override
@@ -100,5 +93,10 @@ public class PetSheep extends EntityPet {
     @Override
     protected String getType() {
         return "'s sheep";
+    }
+
+    @Override
+    protected String getSaveName() {
+        return "Sheep";
     }
 }

@@ -4,12 +4,9 @@ import cn.nukkit.Player;
 import cn.nukkit.entity.passive.EntityCow;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.format.FullChunk;
-import cn.nukkit.level.particle.ItemBreakParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.nbt.tag.CompoundTag;
 import me.petterim1.pets.EntityPet;
-import me.petterim1.pets.Main;
-import me.petterim1.pets.Utils;
 
 public class PetCow extends EntityPet {
 
@@ -37,27 +34,30 @@ public class PetCow extends EntityPet {
 
     @Override
     public float getHeight() {
-        return 0.65f;
+        return 1f;
+    }
+
+    @Override
+    protected boolean isFeedItem(int id) {
+        return id == Item.WHEAT;
     }
 
     @Override
     public boolean onInteract(Player player, Item item, Vector3 clickedPos) {
-        if (player.getInventory().getItemInHand().getId() == Item.WHEAT) {
-            player.getInventory().decreaseCount(player.getInventory().getHeldItemIndex());
-            this.level.addParticle(new ItemBreakParticle(
-                    this.add(Utils.rand(-0.5, 0.5), this.getMountedYOffset(), Utils.rand(-0.5, 0.5)),
-                    player.getInventory().getItemInHand()));
-
-            this.inLoveTicks = 10;
-            this.setDataFlag(DATA_FLAGS, DATA_FLAG_INLOVE);
-            player.addExperience(Main.getInstance().getFeedXp());
+        if (this.isFeedItem(item.getId())) {
+            this.feed(player, item);
             return true;
         }
-        return false;
+        return super.onInteract(player, item, clickedPos);
     }
 
     @Override
     protected String getType() {
         return "'s cow";
+    }
+
+    @Override
+    protected String getSaveName() {
+        return "Cow";
     }
 }
