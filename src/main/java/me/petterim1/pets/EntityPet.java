@@ -2,6 +2,7 @@ package me.petterim1.pets;
 
 import cn.nukkit.Player;
 import cn.nukkit.block.*;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.EntityCreature;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.inventory.PlayerInventory;
@@ -114,6 +115,8 @@ public abstract class EntityPet extends EntityCreature {
     public void setSitting() {
         this.moveTime = 0;
         this.stayTime = 60;
+        this.motionX = 0;
+        this.motionZ = 0;
 
         if (this.namedTag.getByte("Sitting") == 0) {
             this.namedTag.putByte("Sitting", 1);
@@ -185,10 +188,10 @@ public abstract class EntityPet extends EntityCreature {
 
     protected boolean checkJump(double dx, double dz) {
         if (this.motionY == 0.16) {
-            int b = level.getBlockIdAt(NukkitMath.floorDouble(this.x), (int) this.y, NukkitMath.floorDouble(this.z));
+            int b = Utils.getBlockId(level, chunk, NukkitMath.floorDouble(this.x), (int) this.y, NukkitMath.floorDouble(this.z));
             return b == BlockID.WATER || b == BlockID.STILL_WATER;
         } else {
-            int b = level.getBlockIdAt(NukkitMath.floorDouble(this.x), (int) (this.y + 0.8), NukkitMath.floorDouble(this.z));
+            int b = Utils.getBlockId(level, chunk, NukkitMath.floorDouble(this.x), (int) (this.y + 0.8), NukkitMath.floorDouble(this.z));
             if (b == BlockID.WATER || b == BlockID.STILL_WATER) {
                 this.motionY = 0.16;
                 return true;
@@ -220,6 +223,19 @@ public abstract class EntityPet extends EntityCreature {
 
     public void updateMove(int tickDiff) {
         if (this.isSitting()) {
+            if (this.onGround) {
+                if (Utils.getBlockId(level, chunk, getFloorX(), getFloorY() - 1, getFloorZ()) == 0) {
+                    this.onGround = false;
+                }
+            }
+            if (this.onGround) {
+                this.motionY = 0;
+            } else {
+                this.motionY -= getGravity();
+            }
+            this.move(this.motionX, this.motionY, this.motionZ);
+            this.motionY *= 0.9;
+            this.updateMovement();
             return;
         }
 
@@ -293,6 +309,16 @@ public abstract class EntityPet extends EntityCreature {
         this.entityBaseTick(tickDiff);
 
         this.updateMove(tickDiff);
+
+        if (!this.closed && this.ticksLived++ > 1 && this.ticksLived % 500 == 0) {
+            for (Entity entity : this.getLevel().getEntities()) {
+                if (entity instanceof EntityPet && entity != this && ((EntityPet) entity).owner.equalsIgnoreCase(this.owner)) {
+                    this.close();
+                    return false;
+                }
+            }
+        }
+
         return true;
     }
 
@@ -302,13 +328,12 @@ public abstract class EntityPet extends EntityCreature {
             this.moveTime -= tickDiff;
         }
 
-        if (this.age % 20 == 0 && this.level.getBlockIdAt(this.getFloorX(), this.getFloorY() - 1, this.getFloorZ()) == 0) {
-            this.onGround = false;
-        }
-
         if (this.y < 0 && Main.getInstance().canTeleportPet()) {
             Player pl = this.getServer().getPlayerExact(this.owner);
             if (pl != null && !pl.isSpectator() && pl.getY() > 0) {
+                if (this.distanceSquared(pl) > 500) {
+                    this.despawnFromAll();
+                }
                 this.teleport(pl);
                 this.onGround = false;
             }

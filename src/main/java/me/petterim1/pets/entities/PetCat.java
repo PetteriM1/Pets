@@ -27,6 +27,8 @@ public class PetCat extends EntityPet {
 
         this.type = this.namedTag.getInt("CatType");
         this.setDataProperty(new IntEntityData(DATA_VARIANT, this.type));
+
+        this.pitch = 100;
     }
 
     @Override

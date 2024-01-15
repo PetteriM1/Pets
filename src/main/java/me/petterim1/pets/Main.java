@@ -48,6 +48,7 @@ public class Main extends PluginBase implements Listener {
     private static Main instance;
     private String nameTagColor;
     private boolean teleportPets;
+    private boolean callPetSwitchWorld;
     private int feedXp;
 
     public static Main getInstance() {
@@ -87,6 +88,7 @@ public class Main extends PluginBase implements Listener {
 
         this.nameTagColor = config.getString("nameTagColor");
         this.teleportPets = config.getBoolean("teleportPets");
+        this.callPetSwitchWorld = config.getBoolean("callPetSwitchWorld");
         this.feedXp = config.getInt("feedXp");
 
         this.registerPets();
@@ -104,18 +106,18 @@ public class Main extends PluginBase implements Listener {
                 return true;
             }
 
+            Player pl;
             switch (args[0].toLowerCase()) {
                 case "add":
-                    Player pl;
                     if (args.length == 2 && sender instanceof Player) {
                         pl = (Player) sender;
                     } else if (args.length != 3) {
-                        sender.sendMessage("\u00A76Usage: /pet add [player] <pet>");
+                        sender.sendMessage("§6Usage: /pet add [player] <pet>");
                         return true;
                     } else {
                         pl = this.getServer().getPlayerExact(args[1]);
                         if (pl == null) {
-                            sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
+                            sender.sendMessage("§d>> §cUnknown player");
                             return true;
                         }
                     }
@@ -125,7 +127,7 @@ public class Main extends PluginBase implements Listener {
                     }
 
                     if (hasPet(pl.getName())) {
-                        sender.sendMessage("\u00A7d>> \u00A7cThis player already has a pet");
+                        sender.sendMessage("§d>> §cThis player already has a pet");
                         return true;
                     }
 
@@ -144,23 +146,23 @@ public class Main extends PluginBase implements Listener {
                         config.set("players." + pl.getName().toLowerCase(), args[args.length - 1]);
                         config.save();
 
-                        sender.sendMessage("\u00A7d>> \u00A7aPet added");
+                        sender.sendMessage("§d>> §aPet added");
                         getLogger().info("Pet added for " + pl.getName());
                         return true;
                     }
 
-                    sender.sendMessage("\u00A7d>> \u00A7cUnknown pet: " + args[args.length - 1]);
+                    sender.sendMessage("§d>> §cUnknown pet: " + args[args.length - 1]);
                     return true;
                 case "remove":
                     if (args.length == 1 && sender instanceof Player) {
                         pl = (Player) sender;
                     } else if (args.length != 2) {
-                        sender.sendMessage("\u00A76Usage: /pet remove [player]");
+                        sender.sendMessage("§6Usage: /pet remove [player]");
                         return true;
                     } else {
                         pl = this.getServer().getPlayerExact(args[1]);
                         if (pl == null) {
-                            sender.sendMessage("\u00A7d>> \u00A7cUnknown player");
+                            sender.sendMessage("§d>> §cUnknown player");
                             return true;
                         }
                     }
@@ -171,11 +173,11 @@ public class Main extends PluginBase implements Listener {
 
                     String se = pl.getName().toLowerCase();
                     if (!hasPet(se)) {
-                        sender.sendMessage("\u00A7d>> \u00A7cThis player does not have a pet");
+                        sender.sendMessage("§d>> §cThis player does not have a pet");
                         return true;
                     }
 
-                    ((Map) config.get("players")).remove(se);
+                    ((Map<?, ?>) config.get("players")).remove(se);
                     config.save();
 
                     for (Level level : this.getServer().getLevels().values()) {
@@ -183,7 +185,7 @@ public class Main extends PluginBase implements Listener {
                             if (entity instanceof EntityPet) {
                                 if (((EntityPet) entity).isOwner(pl)) {
                                     entity.close();
-                                    sender.sendMessage("\u00A7d>> \u00A7aPet removed");
+                                    sender.sendMessage("§d>> §aPet removed");
                                     getLogger().info("Pet removed from " + pl.getName());
                                     return true;
                                 }
@@ -191,7 +193,7 @@ public class Main extends PluginBase implements Listener {
                         }
                     }
 
-                    sender.sendMessage("\u00A7d>> \u00A7eThe pet will be removed next time its chunk is loaded");
+                    sender.sendMessage("§d>> §eThe pet will be removed next time its chunk is loaded");
                     return true;
                 case "list":
                     sendPetsList(sender);
@@ -201,7 +203,7 @@ public class Main extends PluginBase implements Listener {
             }
         } else if (cmd.getName().equals("callpet")) {
             if (!(sender instanceof Player)) {
-                sender.sendMessage("\u00A7d>> \u00A7cThis command only works in game");
+                sender.sendMessage("§d>> §cThis command only works in game");
                 return true;
             }
 
@@ -210,7 +212,7 @@ public class Main extends PluginBase implements Listener {
             }
 
             if (!hasPet(sender.getName())) {
-                sender.sendMessage("\u00A7d>> \u00A7cYou don't have a pet");
+                sender.sendMessage("§d>> §cYou don't have a pet");
                 return true;
             }
 
@@ -218,20 +220,18 @@ public class Main extends PluginBase implements Listener {
                 for (Entity entity : level.getEntities()) {
                     if (entity instanceof EntityPet) {
                         if (((EntityPet) entity).isOwner((Player) sender)) {
-                            if (/*((Player) sender).distance(entity) > 50 ||*/ !((Player) sender).getLevel().equals(entity.getLevel())) {
-                                if (!config.getBoolean("callPetSwitchWorld")) {
-                                    sender.sendMessage("\u00A7d>> \u00A7cYou cannot teleport your pet to this world");
+                            if (!((Player) sender).getLevel().equals(entity.getLevel())) {
+                                if (!this.callPetSwitchWorld()) {
+                                    sender.sendMessage("§d>> §cYou cannot teleport your pet to this world");
                                     return true;
                                 }
 
+                                entity.despawnFromAll();
                                 entity.setLevel(((Player) sender).getLevel());
-                                entity.teleport((Player) sender);
-                            } else {
-                                entity.teleport((Player) sender);
-                                /*((EntityPet) entity).target = (Player) sender;
-                                ((EntityPet) entity).stayTime = 0;
-                                ((EntityPet) entity).findingPlayer = true;*/
+                            } else if (entity.distanceSquared((Player) sender) > 500) {
+                                entity.despawnFromAll();
                             }
+                            entity.teleport((Player) sender);
 
                             entity.onGround = false;
                             if (((EntityPet) entity).isSitting()) {
@@ -239,14 +239,14 @@ public class Main extends PluginBase implements Listener {
                             }
                             entity.scheduleUpdate();
 
-                            sender.sendMessage("\u00A7d>> \u00A7aPet called");
+                            sender.sendMessage("§d>> §aPet called");
                             return true;
                         }
                     }
                 }
             }
 
-            sender.sendMessage("\u00A7d>> \u00A7cPet not found. It might be on an unloaded chunk");
+            sender.sendMessage("§d>> §cPet not found. It might be on an unloaded chunk");
             return true;
         }
 
@@ -254,15 +254,15 @@ public class Main extends PluginBase implements Listener {
     }
 
     private static void sendPetsList(CommandSender sender) {
-        sender.sendMessage("\u00A7d>> \u00A7aAvailable pets: \u00A76Cat, Chicken, Cow, Dog, Fox, Pig, PolarBear, Sheep");
+        sender.sendMessage("§d>> §aAvailable pets: §6Cat, Chicken, Cow, Dog, Fox, Pig, PolarBear, Sheep");
     }
 
     private static void sendCommandList(CommandSender sender) {
-        sender.sendMessage("\u00A7d* \u00A7aPets \u00A7d*");
-        sender.sendMessage("\u00A76/pet add [player] <pet>");
-        sender.sendMessage("\u00A76/pet remove [player]");
-        sender.sendMessage("\u00A76/pet list");
-        sender.sendMessage("\u00A76/callpet");
+        sender.sendMessage("§d* §aPets §d*");
+        sender.sendMessage("§6/pet add [player] <pet>");
+        sender.sendMessage("§6/pet remove [player]");
+        sender.sendMessage("§6/pet list");
+        sender.sendMessage("§6/callpet");
     }
 
     public boolean hasPet(String player) {
@@ -293,25 +293,34 @@ public class Main extends PluginBase implements Listener {
         return this.teleportPets;
     }
 
+    public boolean callPetSwitchWorld() {
+        return this.callPetSwitchWorld;
+    }
+
     public int getFeedXp() {
         return this.feedXp;
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onTeleport(PlayerTeleportEvent e) {
         Player pl = e.getPlayer();
         if (pl.isSpectator() || !canTeleportPet()) return;
-        for (Level level : this.getServer().getLevels().values()) {
-            for (Entity entity : level.getEntities()) {
-                if (entity instanceof EntityPet) {
-                    if (((EntityPet) entity).isOwner(pl) && !((EntityPet) entity).isSitting()) {
+        if (!callPetSwitchWorld() && e.getFrom().getLevel().equals(e.getTo().getLevel())) {
+            return;
+        }
+        for (Entity entity : e.getFrom().getLevel().getEntities()) {
+            if (entity instanceof EntityPet) {
+                if (((EntityPet) entity).isOwner(pl) && !((EntityPet) entity).isSitting()) {
+                    if (e.getFrom().getLevel().equals(e.getTo().getLevel())) {
+                        entity.despawnFromAll();
                         entity.setLevel(e.getTo().getLevel());
-                        entity.teleport(e.getTo());
-                        entity.onGround = false;
-                        ((EntityPet) entity).setSitting();
-                        entity.scheduleUpdate();
-                        return;
+                    } else if (e.getFrom().distanceSquared(e.getTo()) > 500) {
+                        entity.despawnFromAll();
                     }
+                    entity.teleport(e.getTo());
+                    entity.onGround = false;
+                    entity.scheduleUpdate();
+                    return;
                 }
             }
         }
